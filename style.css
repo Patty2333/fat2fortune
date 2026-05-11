@@ -722,6 +722,7 @@ body {
   width: 68px;
   height: 68px;
   margin-left: auto;
+  margin-top: 20px;
   flex-shrink: 0;
   transition: transform 0.3s ease;
   cursor: pointer;
@@ -1709,26 +1710,76 @@ body {
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
   position: relative;
+  border: 1.5px solid transparent;
 }
 
-.badge-item.unlocked {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(245, 166, 35, 0.08));
-  border: 1.5px solid rgba(245, 166, 35, 0.25);
-}
-
-.badge-item.locked {
+/* 等级0：未开始 - 灰色 */
+.badge-item.lvl-0 {
   background: var(--bg-card-alt);
   border: 1.5px dashed var(--border-color);
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
-.badge-item.unlocked:hover {
+.badge-item.lvl-0 .badge-icon {
+  filter: grayscale(1) opacity(0.4);
+}
+
+.badge-item.lvl-0 .badge-name {
+  color: var(--text-muted);
+}
+
+/* 等级1：起步 - 暗淡 */
+.badge-item.lvl-1 {
+  background: linear-gradient(135deg, rgba(150, 150, 160, 0.08), rgba(140, 140, 150, 0.04));
+  border: 1.5px solid rgba(150, 150, 160, 0.2);
+  opacity: 0.65;
+}
+
+.badge-item.lvl-1 .badge-icon {
+  filter: grayscale(0.6) opacity(0.55);
+}
+
+.badge-item.lvl-1 .badge-name {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* 等级2：接近 - 发亮 */
+.badge-item.lvl-2 {
+  background: linear-gradient(135deg, rgba(255, 200, 80, 0.1), rgba(245, 166, 35, 0.06));
+  border: 1.5px solid rgba(245, 180, 50, 0.3);
+  opacity: 0.85;
+}
+
+.badge-item.lvl-2 .badge-icon {
+  filter: grayscale(0) brightness(0.9);
+}
+
+.badge-item.lvl-2 .badge-name {
+  color: #B8860B;
+  font-weight: 650;
+}
+
+/* 等级3：已解锁 - 金光闪耀 */
+.badge-item.lvl-3 {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(245, 166, 35, 0.09));
+  border: 1.5px solid rgba(245, 166, 35, 0.35);
+  opacity: 1;
+}
+
+.badge-item.lvl-3 .badge-icon {
+  animation: badgeShine 2s ease-in-out infinite;
+}
+
+.badge-item.lvl-3 .badge-name {
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.badge-item.lvl-3:hover,
+.badge-item.lvl-2:hover {
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 4px 16px rgba(245, 166, 35, 0.2);
-}
-
-.badge-item.unlocked .badge-icon {
-  animation: badgeShine 2s ease-in-out infinite;
 }
 
 @keyframes badgeShine {
@@ -1753,10 +1804,6 @@ body {
   max-width: 100%;
 }
 
-.badge-item.unlocked .badge-name {
-  color: var(--accent-gold);
-  font-weight: 700;
-}
 
 .badge-hint {
   text-align: center;
@@ -1808,18 +1855,51 @@ body {
   border: 1.5px solid transparent;
 }
 
-.badge-detail-item.unlocked {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(245, 166, 35, 0.04));
-  border-color: rgba(245, 166, 35, 0.2);
-}
-
-.badge-detail-item.locked {
+/* 弹窗内等级样式 */
+.badge-detail-item.lvl-0 {
   background: var(--bg-card-alt);
   border-color: var(--border-light);
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
-.badge-detail-item.unlocked:hover {
+.badge-detail-item.lvl-0 .badge-detail-icon {
+  filter: grayscale(1) opacity(0.35);
+}
+
+.badge-detail-item.lvl-1 {
+  background: linear-gradient(135deg, rgba(150, 150, 160, 0.06), rgba(140, 140, 150, 0.03));
+  border-color: rgba(150, 150, 160, 0.15);
+  opacity: 0.65;
+}
+
+.badge-detail-item.lvl-1 .badge-detail-icon {
+  filter: grayscale(0.6) opacity(0.55);
+}
+
+.badge-detail-item.lvl-2 {
+  background: linear-gradient(135deg, rgba(255, 200, 80, 0.08), rgba(245, 166, 35, 0.04));
+  border-color: rgba(245, 180, 50, 0.25);
+  opacity: 0.9;
+}
+
+.badge-detail-item.lvl-2 .badge-detail-icon {
+  filter: grayscale(0) brightness(0.9);
+}
+
+.badge-detail-item.lvl-3 {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(245, 166, 35, 0.05));
+  border-color: rgba(245, 166, 35, 0.25);
+  opacity: 1;
+}
+
+.badge-detail-item.lvl-3 .badge-detail-icon {
+  background: linear-gradient(135deg, var(--accent-gold-soft), rgba(255, 215, 0, 0.15));
+  border-color: rgba(245, 166, 35, 0.2);
+  animation: badgeIconPulse 2s ease-in-out infinite;
+}
+
+.badge-detail-item.lvl-3:hover,
+.badge-detail-item.lvl-2:hover {
   transform: translateX(4px);
   box-shadow: 0 2px 12px rgba(245, 166, 35, 0.12);
 }
@@ -1837,11 +1917,6 @@ body {
   border: 1px solid var(--border-light);
 }
 
-.badge-detail-item.unlocked .badge-detail-icon {
-  background: linear-gradient(135deg, var(--accent-gold-soft), rgba(255, 215, 0, 0.15));
-  border-color: rgba(245, 166, 35, 0.2);
-  animation: badgeIconPulse 2s ease-in-out infinite;
-}
 
 @keyframes badgeIconPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.2); }
@@ -1882,6 +1957,39 @@ body {
   font-size: 0.78rem;
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+/* 进度百分比标签 */
+.badge-progress-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card-alt);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+}
+
+.badge-detail-item.lvl-2 .badge-progress-tag {
+  color: #B8860B;
+  background: rgba(255, 200, 80, 0.1);
+  border-color: rgba(245, 180, 50, 0.25);
+}
+
+/* 进度条 */
+.badge-progress-bar {
+  margin-top: 6px;
+  height: 5px;
+  background: var(--bg-card-alt);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.badge-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent-gold));
+  border-radius: 3px;
+  transition: width 0.5s ease;
 }
 
 /* ===== 成就解锁庆祝弹窗 ===== */

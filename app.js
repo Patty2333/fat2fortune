@@ -16,6 +16,8 @@ const DEFAULT_DATA = {
 };
 
 // ===== 成就徽章定义 =====
+// 每个徽章支持 progress(d) → 0~1 返回当前进度
+// 等级：0=灰(未开始) 1=暗(起步) 2=亮(接近) 3=金光(已解锁)
 const ACHIEVEMENTS = [
   {
     id: 'first_resist',
@@ -23,6 +25,7 @@ const ACHIEVEMENTS = [
     name: '初次克制',
     desc: '第一次忍住没买高热量食物，自律之旅正式开始！',
     condition: (d) => d.history.some(h => h.type === 'resist'),
+    progress: (d) => d.history.some(h => h.type === 'resist') ? 1 : 0,
   },
   {
     id: 'streak_3',
@@ -30,6 +33,7 @@ const ACHIEVEMENTS = [
     name: '三日燃火',
     desc: '连续3天带着饥饿感入睡，你的意志力正在燃烧！',
     condition: (d) => d.currentStreak >= 3,
+    progress: (d) => Math.min(1, d.currentStreak / 3),
   },
   {
     id: 'streak_7',
@@ -37,6 +41,7 @@ const ACHIEVEMENTS = [
     name: '周周坚持',
     desc: '连续7天打卡！一周的自律换来一生的习惯。',
     condition: (d) => d.currentStreak >= 7,
+    progress: (d) => Math.min(1, d.currentStreak / 7),
   },
   {
     id: 'streak_30',
@@ -44,6 +49,7 @@ const ACHIEVEMENTS = [
     name: '月度传奇',
     desc: '连续30天打卡！你已经超越了90%的人。',
     condition: (d) => d.currentStreak >= 30,
+    progress: (d) => Math.min(1, d.currentStreak / 30),
   },
   {
     id: 'save_100',
@@ -51,6 +57,7 @@ const ACHIEVEMENTS = [
     name: '百元存钱罐',
     desc: '通过克制消费累计存下100元！每一分都是自律的勋章。',
     condition: (d) => d.totalSaved >= 100,
+    progress: (d) => Math.min(1, d.totalSaved / 100),
   },
   {
     id: 'save_500',
@@ -58,6 +65,7 @@ const ACHIEVEMENTS = [
     name: '小富翁',
     desc: '累计存下500元！你的钱包和身材同时变好了。',
     condition: (d) => d.totalSaved >= 500,
+    progress: (d) => Math.min(1, d.totalSaved / 500),
   },
   {
     id: 'resist_10',
@@ -65,6 +73,7 @@ const ACHIEVEMENTS = [
     name: '十次护盾',
     desc: '成功克制10次美食诱惑！你的自控力已经坚如磐石。',
     condition: (d) => d.history.filter(h => h.type === 'resist').length >= 10,
+    progress: (d) => Math.min(1, (d.history.filter(h => h.type === 'resist').length) / 10),
   },
   {
     id: 'wish_50',
@@ -72,8 +81,17 @@ const ACHIEVEMENTS = [
     name: '半程目标',
     desc: '心愿礼物进度达到50%！离梦想又近了一大步。',
     condition: (d) => d.wish && d.wish.target > 0 && (d.wish.saved / d.wish.target) >= 0.5,
+    progress: (d) => (d.wish && d.wish.target > 0) ? Math.min(1, d.wish.saved / d.wish.target) : 0,
   },
 ];
+
+// 根据进度返回等级 0~3
+function getBadgeLevel(progress) {
+  if (progress >= 1) return 3;   // 已解锁 - 金光
+  if (progress >= 0.5) return 2; // 接近 - 亮
+  if (progress > 0) return 1;    // 起步 - 暗
+  return 0;                       // 未开始 - 灰
+}
 
 // ===== 鼓励文案库（每次随机不同）=====
 const ENCOURAGEMENTS = {
@@ -1203,11 +1221,14 @@ function renderBadgeCard() {
   const displayBadges = ACHIEVEMENTS.slice(0, 4);
   grid.innerHTML = displayBadges.map(badge => {
     const unlocked = data.unlockedBadges.includes(badge.id);
+    const progress = badge.progress ? badge.progress(data) : (unlocked ? 1 : 0);
+    const level = getBadgeLevel(progress);
+    // 等级 class: lvl-0(灰) / lvl-1(暗) / lvl-2(亮) / lvl-3(金光/解锁)
     return `
-      <div class="badge-item ${unlocked ? 'unlocked' : 'locked'}" title="${badge.name}: ${badge.desc}">
-        <span class="badge-icon">${unlocked ? badge.icon : '🔒'}</span>
-        <span class="badge-name">${badge.name}</span>
-      </div>`;
+    <div class="badge-item lvl-${level}" title="${badge.name}: ${badge.desc}${!unlocked ? ' (' + Math.round(progress * 100) + '%)' : ''}">
+      <span class="badge-icon">${badge.icon}</span>
+      <span class="badge-name">${badge.name}</span>
+    </div>`;
   }).join('');
 }
 
@@ -1217,12 +1238,16 @@ function openBadgeModal() {
 
   list.innerHTML = ACHIEVEMENTS.map(badge => {
     const unlocked = data.unlockedBadges.includes(badge.id);
+    const progress = badge.progress ? badge.progress(data) : (unlocked ? 1 : 0);
+    const level = getBadgeLevel(progress);
+    const pct = Math.round(progress * 100);
     return `
-      <div class="badge-detail-item ${unlocked ? 'unlocked' : 'locked'}">
-        <div class="badge-detail-icon">${unlocked ? badge.icon : '🔒'}</div>
+      <div class="badge-detail-item lvl-${level}">
+        <div class="badge-detail-icon">${badge.icon}</div>
         <div class="badge-detail-info">
-          <div class="badge-detail-name">${badge.name} ${unlocked ? '<span class="badge-unlocked-tag">✓ 已解锁</span>' : ''}</div>
+          <div class="badge-detail-name">${badge.name} ${unlocked ? '<span class="badge-unlocked-tag">✓ 已解锁</span>' : '<span class="badge-progress-tag">' + pct + '%</span>'}</div>
           <div class="badge-detail-desc">${badge.desc}</div>
+          ${!unlocked ? `<div class="badge-progress-bar"><div class="badge-progress-fill" style="width:${pct}%"></div></div>` : ''}
         </div>
       </div>`;
   }).join('');
