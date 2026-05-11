@@ -669,6 +669,21 @@ body {
   gap: 10px;
 }
 
+/* 打卡卡片标题行（火焰 + 打卡日历） */
+.streak-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.streak-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
 .streak-flame {
   font-size: 1.3rem;
   animation: flame-dance 0.8s ease-in-out infinite alternate;
