@@ -1970,9 +1970,9 @@ line-height: 1;
     padding: 22px;
   }
 
-  .top-bar {
-    padding: 12px 0 32px;
-  }
+.top-bar {
+  padding: 8px 0 4px;
+}
 
   .app-title {
     font-size: 1.7rem;
@@ -3087,7 +3087,7 @@ line-height: 1;
   flex-direction: column;
   gap: 16px;
   align-items: center;
-  padding: 20px 0;
+  padding: 12px 0;
 }
 
 .avatar-container {
