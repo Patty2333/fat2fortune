@@ -1927,9 +1927,9 @@ line-height: 1;
     padding-right: 28px;
   }
 
-  .tab-pages {
-    padding-top: 100px;
-  }
+.tab-pages {
+  padding-top: 64px;
+}
 
   /* 桌面端：累计存下区域更大 */
   .total-saved-display {
@@ -2635,7 +2635,7 @@ line-height: 1;
   position: relative;
   min-height: calc(100vh - 120px);
   /* 为固定的顶部导航栏留出空间 */
-  padding-top: 86px;
+  padding-top: 52px;
 }
 
 .tab-page {
