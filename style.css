@@ -72,7 +72,7 @@ body {
 .app-container {
   max-width: 420px;
   margin: 0 auto;
-  padding: 20px 20px 100px;
+  padding: 20px 20px 80px;
   position: relative;
 }
 
@@ -81,7 +81,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 4px 0 2px;
   position: fixed;
   top: 0;
   z-index: 100;
@@ -1957,9 +1957,9 @@ line-height: 1;
   transform: translateX(-50%);
 }
 
-  .app-container {
-    padding-bottom: 100px;
-  }
+.app-container {
+  padding-bottom: 70px;
+}
 
   /* 桌面端对称 2×2 布局 — 继承上面481px的统一定义 */
   .dashboard-grid {
@@ -2635,7 +2635,7 @@ line-height: 1;
   position: relative;
   min-height: calc(100vh - 120px);
   /* 为固定的顶部导航栏留出空间 */
-  padding-top: 32px;
+  padding-top: 24px;
 }
 
 .tab-page {
