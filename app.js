@@ -130,10 +130,269 @@ const ENCOURAGEMENTS = {
 // 热量估算映射（每元对应预估kcal）
 const CALORIE_PER_YUAN = 35; // 平均每元食物约35kcal
 
-// ===== 工具函数 =====
+// ============================================================
+//  🔐 用户认证系统（localStorage 多用户支持）
+// ============================================================
+
+const AUTH_KEY = 'fat2fortune_auth';       // 当前登录用户
+const USERS_KEY = 'fat2fortune_users';     // 所有注册用户 { username: { nickname, passwordHash } }
+const DATA_PREFIX = 'fat2fortune_data_';   // 用户数据前缀 fat2fortune_data_xxx
+
+// ===== 认证工具函数 =====
+
+function getUsers() {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function getCurrentUser() {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setCurrentUser(user) {
+  if (user) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(AUTH_KEY);
+  }
+}
+
+// 简单哈希（非安全用途，仅防明文存储）
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + ch;
+    hash |= 0;
+  }
+  return 'h' + Math.abs(hash).toString(36);
+}
+
+// ===== 登录 / 注册 / 登出 =====
+
+function openAuthModal(panel = 'login') {
+  switchAuthPanel(panel);
+  document.getElementById('authModal').classList.add('active');
+}
+
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('active');
+  // 清空表单
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('regNickname').value = '';
+  document.getElementById('regUsername').value = '';
+  document.getElementById('regPassword').value = '';
+  document.getElementById('regPassword2').value = '';
+}
+
+function switchAuthPanel(panel) {
+  document.getElementById('loginPanel').style.display = panel === 'login' ? 'block' : 'none';
+  document.getElementById('registerPanel').style.display = panel === 'register' ? 'block' : 'none';
+}
+
+function handleRegister() {
+  const nickname = document.getElementById('regNickname').value.trim();
+  const username = document.getElementById('regUsername').value.trim().toLowerCase();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+
+  // 验证
+  if (!nickname || !username || !password) {
+    showToast('⚠️ 请填写完整信息');
+    return;
+  }
+  if (username.length < 3 || username.length > 20) {
+    showToast('⚠️ 用户名需 3-20 个字符');
+    return;
+  }
+  if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
+    showToast('⚠️ 用户名只能包含字母、数字、下划线或中文');
+    return;
+  }
+  if (password.length < 6) {
+    showToast('⚠️ 密码至少6位');
+    return;
+  }
+  if (password !== password2) {
+    showToast('⚠️ 两次密码不一致');
+    return;
+  }
+
+  const users = getUsers();
+  if (users[username]) {
+    showToast('⚠️ 该用户名已被注册');
+    return;
+  }
+
+// 注册用户
+users[username] = {
+  id: simpleHash(username + Date.now()),
+  nickname: nickname,
+  avatar: '🐷', // 默认头像
+  passwordHash: simpleHash(password),
+  createdAt: new Date().toISOString(),
+};
+saveUsers(users);
+
+  showToast('✅ 注册成功！请登录');
+  switchAuthPanel('login');
+  // 预填用户名
+  document.getElementById('loginUsername').value = username;
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginPassword').focus();
+}
+
+function handleLogin() {
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!username || !password) {
+    showToast('⚠️ 请输入用户名和密码');
+    return;
+  }
+
+  const users = getUsers();
+  const user = users[username];
+
+  if (!user) {
+    showToast('⚠️ 用户不存在');
+    return;
+  }
+  if (user.passwordHash !== simpleHash(password)) {
+    showToast('⚠️ 密码错误');
+    return;
+  }
+
+  // 登录成功
+  setCurrentUser({ 
+    username, 
+    nickname: user.nickname,
+    avatar: user.avatar || '🐷',
+    id: user.id,
+    createdAt: user.createdAt
+  });
+  showToast(`🎉 欢迎回来，${user.nickname}！`);
+  closeAuthModal();
+
+  // 加载该用户数据并刷新页面
+  data = loadData();
+  renderAll();
+  updateAuthUI();
+}
+
+function handleLogout() {
+  if (!confirm('确定要退出登录吗？\n（你的数据已保存在本地，下次登录即可恢复）')) return;
+
+  setCurrentUser(null);
+  data = { ...DEFAULT_DATA }; // 重置为默认数据
+  showToast('👋 已退出登录');
+
+  // 切回首页
+  switchTab('home');
+  renderAll();
+  updateAuthUI();
+
+  // 打开登录弹窗
+  setTimeout(() => openAuthModal('login'), 400);
+}
+
+// 检查是否已登录，未登录则弹窗
+function checkAuth() {
+  const user = getCurrentUser();
+  if (!user) {
+    // 延迟一点弹出，让页面先渲染
+    setTimeout(() => openAuthModal('login'), 600);
+    return false;
+  }
+  return true;
+}
+
+// 更新"我的"页面的登录状态UI
+function updateAuthUI() {
+  const user = getCurrentUser();
+  const profileName = document.getElementById('profileName');
+  const profileHeader = document.querySelector('.profile-header');
+  const profileAvatar = profileHeader?.querySelector('.profile-avatar');
+
+  if (user && profileName) {
+    // 已登录：显示昵称 + 登出按钮
+    profileName.textContent = user.nickname;
+    
+    // 显示用户头像
+    if (profileAvatar) {
+      if (user.avatarData) {
+        profileAvatar.innerHTML = `<img src="${user.avatarData}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+      } else {
+        profileAvatar.textContent = '🐷';
+      }
+    }
+    
+    if (profileHeader && !profileHeader.classList.contains('profile-header-logged-in')) {
+      profileHeader.classList.add('profile-header-logged-in');
+      // 添加登出按钮（如果还没有）
+      if (!profileHeader.querySelector('.logout-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'logout-btn';
+        btn.textContent = '退出登录';
+        btn.onclick = handleLogout;
+        profileHeader.appendChild(btn);
+      }
+    }
+  } else {
+    // 未登录：显示默认 + 引导登录
+    if (profileName) profileName.textContent = '自律达人';
+    if (profileAvatar) profileAvatar.textContent = '🐷';
+    const logoutBtn = profileHeader?.querySelector('.logout-btn');
+    if (logoutBtn) logoutBtn.remove();
+    if (profileHeader) profileHeader.classList.remove('profile-header-logged-in');
+  }
+}
+
+// 点击遮罩层关闭登录弹窗
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'authModal') {
+    // 如果未登录，不允许关闭
+    if (!getCurrentUser()) return;
+    closeAuthModal();
+  }
+});
+
+// 回车键提交
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const authModal = document.getElementById('authModal');
+    if (authModal && authModal.classList.contains('active')) {
+      const loginPanel = document.getElementById('loginPanel');
+      if (loginPanel.style.display !== 'none') {
+        handleLogin();
+      } else {
+        handleRegister();
+      }
+    }
+  }
+});
+
+// ===== 工具函数（多用户数据隔离）=====
 function loadData() {
   try {
-    const raw = localStorage.getItem('fat2fortune_data');
+    // 根据当前登录用户加载数据
+    const user = getCurrentUser();
+    const dataKey = user ? DATA_PREFIX + user.username : 'fat2fortune_data';
+    const raw = localStorage.getItem(dataKey);
     if (raw) {
       return JSON.parse(raw);
     }
@@ -145,7 +404,10 @@ function loadData() {
 
 function saveData(data) {
   try {
-    localStorage.setItem('fat2fortune_data', JSON.stringify(data));
+    // 根据当前登录用户保存数据
+    const user = getCurrentUser();
+    const dataKey = user ? DATA_PREFIX + user.username : 'fat2fortune_data';
+    localStorage.setItem(dataKey, JSON.stringify(data));
   } catch (e) {
     console.error('数据保存失败:', e);
   }
@@ -186,17 +448,86 @@ let data = loadData();
 // 日历系统变量（提前声明，避免 TDZ 错误）
 let calViewYear, calViewMonth;
 
+// ===== 初始化用户系统 =====
+function initUserSystem() {
+  const users = getUsers();
+  // 如果没有任何用户，创建一个演示账户
+  if (Object.keys(users).length === 0) {
+    const demoUser = {
+      id: simpleHash('demo_' + Date.now()),
+      nickname: '自律达人',
+      avatar: '🐷',
+      passwordHash: simpleHash('123456'),
+      createdAt: new Date().toISOString(),
+    };
+    users['demo'] = demoUser;
+    saveUsers(users);
+    console.log('✅ 已创建演示账户: 用户名=demo, 密码=123456');
+  }
+
+  // 检查是否有旧数据需要迁移到 Patty 账户
+  migrateDataToPatty();
+}
+
+// ===== 数据迁移到 Patty 账户 =====
+function migrateDataToPatty() {
+  const users = getUsers();
+  
+  // 检查是否已存在 Patty 账户
+  if (!users['patty']) {
+    // 创建 Patty 账户
+    users['patty'] = {
+      id: simpleHash('patty_' + Date.now()),
+      nickname: 'Patty',
+      avatar: '🐷',
+      passwordHash: simpleHash('patty123'),
+      createdAt: new Date().toISOString(),
+    };
+    saveUsers(users);
+    console.log('✅ 已创建 Patty 账户');
+  }
+
+  // 检查旧数据（未登录时的数据）
+  const oldDataKey = 'fat2fortune_data';
+  const oldData = localStorage.getItem(oldDataKey);
+  
+  if (oldData) {
+    // 如果存在旧数据，将其迁移到 Patty 账户
+    const pattyDataKey = DATA_PREFIX + 'patty';
+    const existingPattyData = localStorage.getItem(pattyDataKey);
+    
+    // 如果 Patty 还没有数据，就用旧数据
+    if (!existingPattyData) {
+      localStorage.setItem(pattyDataKey, oldData);
+      console.log('✅ 已将旧数据迁移到 Patty 账户');
+    }
+    
+    // 删除旧数据键
+    localStorage.removeItem(oldDataKey);
+  }
+}
+
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
+  initUserSystem();   // 初始化用户系统（如果需要创建演示账户）
+  setupAvatarUpload(); // 初始化头像上传
+  renderFoodChips();   // 渲染食物标签（从localStorage读取）
   renderAll();
   initFoodPresets();
   checkDailyReset();
   initAllEventListeners();
   playEntranceAnimationDelayed();
+
+  // 检查登录状态 + 更新"我的"页面UI
+  updateAuthUI();
+  checkAuth();
 });
 
 // 统一初始化所有事件监听器
 function initAllEventListeners() {
+  // ===== 底部Tab切换 =====
+  initTabSwitch();
+
   // 给行动按钮绑定涟漪
   document.querySelectorAll('.btn-action').forEach(btn => {
     btn.addEventListener('click', (e) => createRipple(e, btn));
@@ -226,9 +557,9 @@ function initAllEventListeners() {
     openCalendarModal();
   });
 
-  // ---- 累计金额点击 → 显示统计摘要 ----
+  // ---- 累计金额点击 → 跳转到目标页 ----
   document.querySelector('.total-saved-display')?.addEventListener('click', () => {
-    showStats();
+    switchTab('goal');
   });
 
   // ---- 按钮按住效果（移动端触控优化）----
@@ -254,6 +585,10 @@ function renderAll() {
   renderHistoryList();
   updateCheckinButtonState();
   renderBadgeCard();
+  // 渲染各Tab页面数据
+  renderGoalPage();
+  renderRecordPage();
+  renderMinePage();
 }
 
 // ===== 渲染：累计金额 =====
@@ -335,7 +670,7 @@ function renderStreakCard() {
   } else if (progress >= 0.66) {
     ring.style.stroke = '#FFD700'; // 金色-快到了
   } else {
-    ring.style.stroke = '#7C4DFF'; // 紫色-正常
+    ring.style.stroke = '#3D3D3D'; // 深灰-正常
   }
 }
 
@@ -413,16 +748,272 @@ function checkDailyReset() {
 
 // ===== 食物预设初始化 =====
 function initFoodPresets() {
-  const chips = document.querySelectorAll('.food-chip');
-  const amountInput = document.getElementById('resistAmount');
+  const container = document.getElementById('foodPresets');
+  if (!container) return;
 
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('selected'));
-      chip.classList.add('selected');
-      amountInput.value = chip.dataset.price;
-    });
+  // 使用事件委托，区分点击标签主体和编辑区域
+  container.addEventListener('click', (e) => {
+    const chip = e.target.closest('.food-chip');
+    if (!chip) return;
+
+    // 检查是否点击在右侧编辑区域（后30%宽度内）
+    const rect = chip.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const isEditClick = clickX > rect.width * 0.7;
+
+    if (isEditClick) {
+      // 点击了编辑区域 → 打开管理弹窗
+      const idx = Array.from(container.querySelectorAll('.food-chip')).indexOf(chip);
+      openFoodManageModal(idx);
+      return;
+    }
+
+    // 正常点击 → 选中标签
+    const chips = container.querySelectorAll('.food-chip');
+    chips.forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+
+    const amountInput = document.getElementById('resistAmount');
+    if (amountInput) amountInput.value = chip.dataset.price;
   });
+}
+
+// ===== 食物标签数据（默认 + 用户自定义）=====
+const FOODS_STORAGE_KEY = 'fat2fortune_foods';
+
+const DEFAULT_FOODS = [
+  { emoji: '🥜', name: '薛记炒货', price: 28 },
+  { emoji: '🧋', name: '奶茶', price: 18 },
+  { emoji: '🍗', name: '炸鸡套餐', price: 35 },
+  { emoji: '🍰', name: '蛋糕甜点', price: 32 },
+  { emoji: '🍢', name: '烧烤夜宵', price: 60 },
+  { emoji: '🍲', name: '火锅', price: 120 },
+  { emoji: '🍟', name: '快餐', price: 22 },
+  { emoji: '🍦', name: '冰淇淋', price: 15 },
+];
+
+function getFoodList() {
+  try {
+    const raw = localStorage.getItem(FOODS_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [...DEFAULT_FOODS];
+}
+
+function saveFoodList(list) {
+  localStorage.setItem(FOODS_STORAGE_KEY, JSON.stringify(list));
+}
+
+// 渲染食物预设标签到克制弹窗
+function renderFoodChips() {
+  const container = document.getElementById('foodPresets');
+  if (!container) return;
+
+  const foods = getFoodList();
+  container.innerHTML = foods.map((food, i) =>
+    `<button class="food-chip${i === 0 ? ' selected' : ''}" data-name="${food.name}" data-price="${food.price}">${food.emoji} ${food.name} ¥${food.price}</button>`
+  ).join('');
+
+  // 重新绑定点击事件
+  initFoodPresets();
+
+  // 设置默认金额为第一个食物的价格
+  const amountInput = document.getElementById('resistAmount');
+  if (amountInput && foods.length > 0) amountInput.value = foods[0].price;
+}
+
+// ===== 账户编辑弹窗 =====
+
+function openProfileModal() {
+  const user = getCurrentUser();
+  if (!user) {
+    openAuthModal('login');
+    return;
+  }
+
+  // 填充现有数据
+  const nicknameInput = document.getElementById('profileNicknameInput');
+  const profileJoinDate = document.getElementById('profileJoinDate');
+  const profileAccountId = document.getElementById('profileAccountId');
+
+  nicknameInput.value = user.nickname || '';
+  profileJoinDate.textContent = new Date(user.createdAt).toLocaleDateString('zh-CN');
+  profileAccountId.textContent = user.id;
+
+  // 如果用户有头像，显示头像
+  if (user.avatarData) {
+    document.getElementById('avatarPreview').src = user.avatarData;
+  } else {
+    // 重置为默认头像
+    document.getElementById('avatarPreview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23FFF4E0' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='50' text-anchor='middle' dy='.3em'%3E🐷%3C/text%3E%3C/svg%3E";
+  }
+
+  document.getElementById('profileModal').classList.add('active');
+}
+
+function closeProfileModal() {
+  document.getElementById('profileModal').classList.remove('active');
+}
+
+// 图片上传和裁剪
+function setupAvatarUpload() {
+  const avatarUpload = document.getElementById('avatarUpload');
+  if (!avatarUpload) return;
+
+  avatarUpload.addEventListener('change', handleAvatarUpload);
+}
+
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 检查文件类型
+  if (!file.type.startsWith('image/')) {
+    showToast('⚠️ 请选择图片文件');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // 使用 canvas 进行裁剪（正方形）
+      const canvas = document.getElementById('avatarCanvas');
+      canvas.width = 200;
+      canvas.height = 200;
+
+      const ctx = canvas.getContext('2d');
+      
+      // 计算裁剪尺寸（取最小边）
+      const size = Math.min(img.width, img.height);
+      const x = (img.width - size) / 2;
+      const y = (img.height - size) / 2;
+
+      // 绘制圆形头像
+      ctx.beginPath();
+      ctx.arc(100, 100, 100, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, x, y, size, size, 0, 0, 200, 200);
+
+      // 获取头像数据 URL
+      const avatarData = canvas.toDataURL('image/png');
+      
+      // 显示预览
+      const preview = document.getElementById('avatarPreview');
+      preview.src = avatarData;
+
+      showToast('✅ 头像已选择');
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  // 重置 input，允许选择相同文件
+  e.target.value = '';
+}
+
+function saveProfileChanges() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const newNickname = document.getElementById('profileNicknameInput').value.trim();
+  const avatarPreview = document.getElementById('avatarPreview');
+
+  if (!newNickname) {
+    showToast('⚠️ 昵称不能为空');
+    return;
+  }
+
+  // 获取头像数据
+  const newAvatarData = avatarPreview.src;
+
+  // 更新用户信息
+  user.nickname = newNickname;
+  user.avatarData = newAvatarData;
+
+  const users = getUsers();
+  if (users[user.username]) {
+    users[user.username].nickname = newNickname;
+    users[user.username].avatarData = newAvatarData;
+    saveUsers(users);
+    setCurrentUser(user);
+  }
+
+  // 更新头部显示
+  updateAuthUI();
+  renderMinePage();
+
+  // 保存后立即关闭弹窗
+  closeProfileModal();
+  showToast('✅ 账户信息已保存');
+}
+
+// ===== 食物标签管理弹窗 =====
+
+function openFoodManageModal(highlightIdx) {
+  renderFoodManageList(highlightIdx);
+  document.getElementById('foodManageModal').classList.add('active');
+}
+
+function closeFoodManageModal() {
+  document.getElementById('foodManageModal').classList.remove('active');
+}
+
+function renderFoodManageList(highlightIdx) {
+  const listEl = document.getElementById('foodManageList');
+  const foods = getFoodList();
+
+  listEl.innerHTML = foods.map((food, idx) => `
+    <div class="food-manage-item${idx === highlightIdx ? ' food-highlight' : ''}" data-idx="${idx}">
+      <span class="food-manage-emoji">${food.emoji}</span>
+      <span class="food-manage-name">${food.name}</span>
+      <span class="food-manage-price">¥${food.price}</span>
+      <button class="food-manage-delete" onclick="deleteFoodItem(${idx})" title="删除">✕</button>
+    </div>
+  `).join('');
+}
+
+function addFoodItem() {
+  const emoji = document.getElementById('newFoodEmoji').value.trim() || '🍴';
+  const name = document.getElementById('newFoodName').value.trim();
+  const price = parseInt(document.getElementById('newFoodPrice').value) || 0;
+
+  if (!name) { showToast('⚠️ 请输入食物名称'); return; }
+  if (price <= 0 || price > 9999) { showToast('⚠️ 请输入有效价格(1-9999)'); return; }
+
+  const foods = getFoodList();
+  foods.push({ emoji, name, price });
+
+  // 清空输入
+  document.getElementById('newFoodEmoji').value = '';
+  document.getElementById('newFoodName').value = '';
+  document.getElementById('newFoodPrice').value = '';
+
+  renderFoodManageList();
+  showToast(`✅ 已添加「${emoji} ${name}」`);
+}
+
+function deleteFoodItem(idx) {
+  const foods = getFoodList();
+  const removed = foods.splice(idx, 1)[0];
+  renderFoodManageList();
+  showToast(`🗑️ 已删除「${removed.emoji} ${removed.name}」`);
+}
+
+function saveFoodListAndClose() {
+  // 从管理列表中读取当前状态（因为 add/delete 已经修改了内存中的数据）
+  // 这里直接保存即可，renderFoodManageList 已经通过 add/delete 操作了实际列表
+  // 但为了安全，重新从 DOM 收集
+  const items = document.querySelectorAll('.food-manage-item');
+  const foods = getFoodList(); // 当前的 foods 数组已经是最新的（add/delete 直接操作了）
+
+  saveFoodList(foods);
+
+  // 重新渲染克制弹窗的食物标签
+  renderFoodChips();
+
+  closeFoodManageModal();
+  showToast('✅ 食物标签已更新！');
 }
 
 // ===== 克制消费弹窗 =====
@@ -710,7 +1301,7 @@ function startParticles(type) {
   // 粒子配置
   const colors = {
     resist: ['#FF6B35', '#FFD700', '#FF4500', '#FFA500'],
-    checkin: ['#7C4DFF', '#E040FB', '#B388FF', '#EA80FC'],
+    checkin: ['#3D3D3D', '#5A5A5A', '#787878', '#A0A0A0'],
     bonus: ['#00C853', '#FFD700', '#00E676', '#69F0AE'],
   };
 
@@ -915,6 +1506,8 @@ function clearAllHistory() {
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
+      // authModal 未登录时不允许关闭
+      if (overlay.id === 'authModal' && !getCurrentUser()) return;
       overlay.classList.remove('active');
       if (overlay.id === 'celebrationOverlay') stopParticles();
     }
@@ -1011,7 +1604,7 @@ toastStyle.textContent = `
   bottom: 100px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(29, 22, 21, 0.92);
+  background: rgba(26, 26, 30, 0.9);
   color: #fff;
   padding: 12px 24px;
   border-radius: 14px;
@@ -1415,3 +2008,334 @@ function stopBadgeParticles() {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+// ============================================================
+//  📑 Tab 页面切换系统
+// ============================================================
+
+let currentTab = 'home';
+let currentRecordFilter = 'all';
+
+function initTabSwitch() {
+  const nav = document.getElementById('bottomNav');
+  if (!nav) return;
+
+  nav.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const tab = item.dataset.tab;
+      switchTab(tab);
+    });
+  });
+
+  // 记录页筛选标签
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentRecordFilter = tab.dataset.filter;
+      renderRecordPage();
+    });
+  });
+}
+
+function switchTab(tab) {
+  if (tab === currentTab) return;
+  currentTab = tab;
+
+  // 更新导航栏选中态
+  document.querySelectorAll('#bottomNav .nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === tab);
+  });
+
+  // 切换页面显示
+  document.querySelectorAll('.tab-page').forEach(page => {
+    page.classList.remove('active');
+  });
+  const targetPage = document.querySelector(`.tab-${tab}`);
+  if (targetPage) {
+    targetPage.classList.add('active');
+    // 滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // 切换时刷新对应页面数据
+  if (tab === 'goal') renderGoalPage();
+  if (tab === 'history') renderRecordPage();
+  if (tab === 'mine') renderMinePage();
+}
+
+// ============================================================
+//  🎯 目标页渲染
+// ============================================================
+
+function renderGoalPage() {
+  const resistItems = data.history.filter(h => h.type === 'resist');
+  const totalCalories = resistItems.reduce((sum, h) => sum + h.amount * CALORIE_PER_YUAN, 0);
+  const kgLost = (totalCalories / 7700).toFixed(1);
+
+  document.getElementById('goalTotalCalories').textContent = Math.round(totalCalories).toLocaleString();
+  document.getElementById('goalKgLost').textContent = kgLost;
+  document.getElementById('goalResistCount').textContent = resistItems.length;
+
+  // 本周/本月统计
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let weekCalories = 0, monthCalories = 0;
+  resistItems.forEach(item => {
+    const d = new Date(item.timestamp);
+    if (d >= weekStart) weekCalories += item.amount * CALORIE_PER_YUAN;
+    if (d >= monthStart) monthCalories += item.amount * CALORIE_PER_YUAN;
+  });
+
+  document.getElementById('goalWeekCalories').textContent = Math.round(weekCalories).toLocaleString();
+  document.getElementById('goalMonthCalories').textContent = Math.round(monthCalories).toLocaleString();
+  document.getElementById('goalKgEq').textContent = kgLost + 'kg';
+
+  // 心愿详情
+  renderGoalWish();
+
+  // 食物TOP排行
+  renderFoodRank();
+}
+
+function renderGoalWish() {
+  const container = document.getElementById('goalWishDisplay');
+  if (!data.wish) {
+    container.innerHTML = `
+      <div class="wish-empty-state">
+        <div class="empty-icon">🎯</div>
+        <p>还没有心愿礼物<br><small>点击编辑添加一个吧</small></p>
+      </div>`;
+    return;
+  }
+
+  const w = data.wish;
+  const percent = w.target > 0 ? Math.min((w.saved / w.target) * 100, 100) : 0;
+
+  container.innerHTML = `
+    <div class="wish-preview">
+      <div class="wish-img" style="width:64px;height:64px;font-size:2rem;">${w.image ? `<img src="${w.image}" alt="${w.name}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;" onerror="this.parentElement.textContent='🎁'">` : '🎁'}</div>
+      <div class="wish-info">
+        <div class="wish-name" style="font-size:1rem;">${w.name}</div>
+        <div class="wish-bar-wrap" style="height:10px;border-radius:5px;background:#f0ece6;"><div class="wish-bar-fill" style="width:${percent}%;border-radius:5px;background:linear-gradient(90deg,#F5A623,#FFD700);"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <span style="font-size:0.78rem;color:var(--text-secondary);">已存 ¥${formatAmount(w.saved)}</span>
+          <span style="font-size:0.78rem;font-weight:700;color:var(--gold);">目标 ¥${formatAmount(w.target)}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFoodRank() {
+  const container = document.getElementById('foodRankList');
+  const resistItems = data.history.filter(h => h.type === 'resist');
+
+  if (resistItems.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">暂无克制记录</div>';
+    return;
+  }
+
+  // 按食物名称聚合
+  const foodMap = {};
+  resistItems.forEach(item => {
+    // 从名称中提取食物名（去掉前缀）
+    let name = item.name.replace(/^忍住没买「|」$/g, '');
+    if (!foodMap[name]) {
+      foodMap[name] = { name, count: 0, totalAmount: 0, totalCalories: 0 };
+    }
+    foodMap[name].count++;
+    foodMap[name].totalAmount += item.amount;
+    foodMap[name].totalCalories += item.amount * CALORIE_PER_YUAN;
+  });
+
+  // 按总金额排序，取TOP3
+  const ranked = Object.values(foodMap).sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 3);
+
+  const rankClasses = ['n1', 'n2', 'n3'];
+  container.innerHTML = ranked.map((item, i) => `
+    <div class="food-rank-item">
+      <span class="food-rank-num ${rankClasses[i]}">${i + 1}</span>
+      <span class="food-rank-name">${item.name}</span>
+      <span class="food-rank-kcal">${Math.round(item.totalCalories).toLocaleString()} kcal</span>
+      <span class="food-rank-count">${item.count} 次</span>
+    </div>`).join('');
+}
+
+// ============================================================
+//  📝 记录页渲染
+// ============================================================
+
+function renderRecordPage() {
+  const container = document.getElementById('recordPageList');
+
+  if (data.history.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:0.85rem;">🌟 还没有记录，开始你的第一次克制吧！</div>';
+    updateMonthSummary();
+    return;
+  }
+
+  // 筛选
+  let filtered = data.history;
+  if (currentRecordFilter !== 'all') {
+    filtered = data.history.filter(h => h.type === currentRecordFilter);
+  }
+
+  // 最新的在前
+  const sorted = [...filtered].reverse();
+
+  // 按日期分组
+  const groups = {};
+  sorted.forEach(item => {
+    const dateKey = formatDateKey(item.timestamp);
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(item);
+  });
+
+  let html = '';
+  Object.keys(groups).forEach(dateKey => {
+    html += `<div style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:12px 4px 6px;">${dateKey}</div>`;
+    html += '<div class="card" style="padding:4px 12px;">';
+
+    groups[dateKey].forEach(item => {
+      let iconClass = item.type;
+      let icon = '📝';
+      let moneyColor = '';
+      let moneyText = `¥${formatAmount(item.amount)}`;
+
+      if (item.type === 'resist') {
+        icon = '🛑'; iconClass = 'resist'; moneyColor = '';
+      } else if (item.type === 'checkin') {
+        icon = '🌙'; iconClass = 'checkin'; moneyColor = 'var(--purple)'; moneyText = '✓';
+      } else if (item.type === 'bonus') {
+        icon = '🎁'; iconClass = 'bonus'; moneyColor = 'var(--green)'; moneyText = `+¥${formatAmount(item.amount)}`;
+      }
+
+      const calories = item.type === 'resist' ? Math.round(item.amount * CALORIE_PER_YUAN) : 0;
+      const detailText = item.type === 'resist'
+        ? `少摄入 <span>${calories.toLocaleString()} kcal</span> ${item.note ? '· ' + item.note : ''}`
+        : (item.note || '');
+
+      html += `
+        <div class="record-item">
+          <div class="record-icon ${iconClass}">${icon}</div>
+          <div class="record-body">
+            <div class="record-name">${item.name}</div>
+            <div class="record-detail">${detailText}</div>
+          </div>
+          <div class="record-right">
+            <div class="record-money" style="${moneyColor ? 'color:' + moneyColor : ''}">${moneyText}</div>
+            <div class="record-time">${formatTime(item.timestamp)}</div>
+          </div>
+        </div>`;
+    });
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+  updateMonthSummary();
+}
+
+function formatDateKey(timestamp) {
+  const d = new Date(timestamp);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const dStr = `${d.getMonth()+1}月${d.getDate()}日`;
+  if (d.toDateString() === today.toDateString()) return `今天 · ${dStr}`;
+  if (d.toDateString() === yesterday.toDateString()) return `昨天 · ${dStr}`;
+  return dStr;
+}
+
+function updateMonthSummary() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let monthResist = 0, monthCalories = 0, monthSaved = 0, monthCheckins = 0;
+
+  data.history.forEach(item => {
+    const d = new Date(item.timestamp);
+    if (d >= monthStart) {
+      if (item.type === 'resist') { monthResist++; monthCalories += item.amount * CALORIE_PER_YUAN; monthSaved += item.amount; }
+      if (item.type === 'bonus') monthSaved += item.amount;
+    }
+  });
+
+  data.checkins.forEach(dateStr => {
+    const d = new Date(dateStr);
+    if (d >= monthStart && d <= now) monthCheckins++;
+  });
+
+  document.getElementById('msResistCount').textContent = monthResist;
+  document.getElementById('msCalories').textContent = Math.round(monthCalories).toLocaleString();
+  document.getElementById('msSaved').textContent = '¥' + formatAmount(monthSaved);
+  document.getElementById('msCheckins').textContent = monthCheckins;
+}
+
+// ============================================================
+//  👤 我的页面渲染
+// ============================================================
+
+function renderMinePage() {
+  const resistItems = data.history.filter(h => h.type === 'resist');
+  const totalCalories = resistItems.reduce((sum, h) => sum + h.amount * CALORIE_PER_YUAN, 0);
+  const kgLost = (totalCalories / 7700).toFixed(1);
+
+  // 计算坚持天数（从第一条记录或打卡开始）
+  let daysActive = 0;
+  if (data.history.length > 0 || data.checkins.length > 0) {
+    const allDates = [...data.history.map(h => new Date(h.timestamp)), ...data.checkins.map(d => new Date(d))];
+    allDates.sort((a, b) => a - b);
+    const firstDate = allDates[0];
+    daysActive = Math.max(1, Math.ceil((Date.now() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+  }
+
+  // 个人信息
+  const user = getCurrentUser();
+  const profileAvatar = document.querySelector('.profile-avatar');
+  if (profileAvatar && user) {
+    profileAvatar.textContent = user.avatar || '🐷';
+  }
+
+  document.getElementById('profileDays').textContent = `已坚持 ${daysActive} 天 · 加入于 ${formatJoinDate(daysActive)}`;
+
+  // 数据概览
+  document.getElementById('mineTotalSaved').textContent = '¥' + formatAmount(data.totalSaved);
+  document.getElementById('mineCalories').textContent = Math.round(totalCalories).toLocaleString();
+  document.getElementById('mineKg').textContent = kgLost + 'kg';
+
+  // 成就徽章
+  document.getElementById('mineBadgeCount').textContent = `${data.unlockedBadges.length}/${ACHIEVEMENTS.length} 已解锁`;
+  const mineBadgeGrid = document.getElementById('mineBadgeGrid');
+  mineBadgeGrid.innerHTML = ACHIEVEMENTS.map(badge => {
+    const unlocked = data.unlockedBadges.includes(badge.id);
+    return `
+      <div class="badge-item ${unlocked ? 'unlocked' : 'locked'}">
+        <span class="badge-icon">${badge.icon}</span>
+        <span class="badge-name">${badge.name}</span>
+      </div>`;
+  }).join('');
+
+  // 设置-心愿描述
+  const wishDescEl = document.getElementById('settingWishDesc');
+  if (data.wish) {
+    const percent = data.wish.target > 0 ? Math.min((data.wish.saved / data.wish.target) * 100, 100) : 0;
+    wishDescEl.textContent = `${data.wish.name} · 已存 ${percent.toFixed(0)}%`;
+  } else {
+    wishDescEl.textContent = '尚未设置心愿';
+  }
+}
+
+const now = new Date();
+function formatJoinDate(daysActive) {
+  if (daysActive <= 0) return '今天';
+  const d = new Date(now.getTime() - daysActive * 24 * 60 * 60 * 1000);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+

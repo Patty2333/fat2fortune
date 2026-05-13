@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>减重存钱罐 v2.0 - 原型图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #FAF9F6;
+      --card-bg: #FFFFFF;
+      --card-alt: #F2F0EC;
+      --text-primary: #1A1A1E;
+      --text-secondary: #6B6560;
+      --text-muted: #9E9893;
+      --border: #E8E4DE;
+      --primary: #7C5CFC;
+      --primary-soft: #EEE9FF;
+      --gold: #F5A623;
+      --gold-soft: #FFF4E0;
+      --green: #34C759;
+      --green-soft: #E8FAEF;
+      --orange: #FF9F43;
+      --blue: #5BC0EB;
+      --blue-soft: #E8F6FD;
+      --pink: #FF6B9D;
+      --pink-soft: #FFE8F0;
+      --purple: #AF52DE;
+      --purple-soft: #F3EAFC;
+      --radius-sm: 14px;
+      --radius-md: 20px;
+      --radius-lg: 26px;
+      --radius-full: 50px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 6px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #EEECEA;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ===== 原型图总览布局 ===== */
+    .prototype-title {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .prototype-subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+    .prototype-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 380px);
+      gap: 28px;
+      justify-content: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    @media (max-width: 850px) {
+      .prototype-grid { grid-template-columns: 1fr; max-width: 420px; }
+    }
+
+    /* ===== 手机框架 ===== */
+    .phone-frame {
+      background: var(--bg);
+      border-radius: 40px;
+      box-shadow: 
+        0 25px 60px rgba(0,0,0,0.12),
+        0 0 0 1px rgba(0,0,0,0.04),
+        inset 0 0 0 2px rgba(255,255,255,0.6);
+      overflow: hidden;
+      position: relative;
+      height: 780px;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 26px;
+      background: #1a1a1e;
+      border-radius: 20px;
+      z-index: 100;
+    }
+    .tab-label {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-soft);
+      padding: 4px 16px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    /* ===== 手机内部滚动区 ===== */
+    .phone-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 48px 18px 90px;
+      scrollbar-width: none;
+    }
+    .phone-content::-webkit-scrollbar { display: none; }
+
+    /* ===== 顶部栏 ===== */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 18px;
+    }
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    /* ===== Logo - SVG 猪猪存钱罐 + 圆润字体 ===== */
+    .logo-icon {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      animation: logoBounce 3s ease-in-out infinite;
+    }
+    .logo-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 2px 6px rgba(245,166,35,0.2)); }
+    @keyframes logoBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-2px) rotate(-3deg); }
+    }
+    .app-title {
+      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 400;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+    }
+    /* 其他页面标题 - 标准字体 */
+    .page-title {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+    }
+    .top-right-cards {
+      display: flex;
+      gap: 6px;
+    }
+    .mini-stat {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 5px 10px;
+      text-align: center;
+    }
+    .mini-stat-label {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .mini-stat-value {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .mini-stat-value.gold { color: var(--gold); }
+    .mini-stat-value.orange { color: var(--orange); }
+
+    /* ===== 卡片通用 ===== */
+    /* ===== 卡片通用 + 趣味悬浮效果 ===== */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md), 0 8px 24px rgba(124,92,252,0.06);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .card-icon { font-size: 1rem; }
+    .card-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex: 1;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== 行动按钮 ===== */
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    /* ===== 行动按钮 - 暖白协调配色 + 趣味交互 ===== */
+    .btn-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 20px 10px;
+      border: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+    .btn-action::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .btn-action:hover { transform: translateY(-4px) scale(1.02); }
+    .btn-action:active { transform: scale(0.96); }
+    .btn-action .emoji { 
+      font-size: 1.8rem; 
+      transition: transform 0.3s ease;
+      animation: emojiFloat 3s ease-in-out infinite;
+    }
+    .btn-action:hover .emoji { transform: scale(1.25) rotate(-10deg); }
+    @keyframes emojiFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .btn-action .text { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px; }
+    .btn-action .sub { font-size: 0.68rem; opacity: 0.65; }
+    /* 克制按钮 - 温暖珊瑚色系 */
+    .btn-resist {
+      background: linear-gradient(145deg, #FFEEE4, #FFDCC8);
+      color: #C07030;
+      box-shadow: 0 4px 16px rgba(255, 140, 80, 0.15), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .btn-resist:hover {
+      box-shadow: 0 8px 28px rgba(255, 140, 80, 0.25), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    /* 打卡按钮 - 柔和薰衣草色系 */
+    .btn-checkin {
+      background: linear-gradient(145deg, #E8E4FF, #DDD6F7);
+      color: #6B4CC8;
+      box-shadow: 0 4px 16px rgba(124, 92, 252, 0.15), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .btn-checkin:hover {
+      box-shadow: 0 8px 28px rgba(124, 92, 252, 0.25), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    /* ===== 今日摘要 ===== */
+    .summary-row {
+      display: flex;
+      gap: 8px;
+    }
+    .summary-item {
+      flex: 1;
+      background: var(--card-alt);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .summary-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .summary-val.gold { color: var(--gold); }
+    .summary-val.orange { color: var(--orange); }
+    .summary-val.purple { color: var(--purple); }
+    .summary-lbl {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ===== 心愿预览 ===== */
+    .wish-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wish-img {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #FFF5EE, #FFE8D6);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .wish-info { flex: 1; min-width: 0; }
+    .wish-name { font-size: 0.88rem; font-weight: 600; }
+    .wish-bar-wrap {
+      height: 8px; background: var(--card-alt);
+      border-radius: 4px; margin-top: 6px; overflow: hidden;
+    }
+    .wish-bar-fill {
+      height: 100%; width: 35%;
+      background: linear-gradient(90deg, var(--primary), var(--gold));
+      border-radius: 4px;
+    }
+    .wish-pct {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 4px;
+    }
+
+    /* ===== 底部导航栏 - 分散布局 ===== */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 12px 8px 24px;
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; background: none; border: none;
+      color: var(--text-muted); font-size: 0.65rem;
+      padding: 6px 12px 4px; cursor: pointer; position: relative;
+      border-radius: var(--radius-md);
+      transition: all 0.25s ease;
+    }
+    .nav-item:hover { background: var(--card-alt); transform: translateY(-2px); }
+    .nav-item.active { color: var(--primary); }
+    .nav-item .nav-icon { font-size: 1.4rem; transition: transform 0.25s ease; }
+    .nav-item.active .nav-icon { transform: scale(1.15); }
+    .nav-item .nav-label { font-weight: 500; font-size: 0.62rem; }
+
+    /* ===== 目标 Tab 样式 ===== */
+    .stat-big-card {
+      background: linear-gradient(135deg, var(--purple-soft), #F8F0FF);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .stat-big-label {
+      font-size: 0.72rem;
+      color: var(--purple);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .stat-big-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    .stat-big-unit {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .stat-big-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .stat-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-mini-card {
+      background: var(--card-alt);
+      border-radius: var(--radius-sm);
+      padding: 16px 8px;
+      text-align: center;
+    }
+    .stat-mini-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .stat-mini-lbl {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 体重目标卡片 */
+    .weight-card {
+      background: linear-gradient(135deg, var(--blue-soft), #E4F4FE);
+    }
+    .weight-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .weight-dot-start, .weight-dot-end {
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .weight-dot-end { color: var(--green); margin-left: auto; }
+    .weight-bar-track {
+      flex: 1; height: 10px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+    .weight-bar-fill {
+      height: 100%; width: 35%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      border-radius: 5px;
+      position: relative;
+    }
+    .weight-bar-marker {
+      position: absolute;
+      right: 0; top: -3px;
+      width: 16px; height: 16px;
+      background: var(--green);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    /* 食物排行 */
+    .food-rank-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .food-rank-item:last-child { border-bottom: none; }
+    .food-rank-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .food-rank-num.n1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+    .food-rank-num.n2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); }
+    .food-rank-num.n3 { background: linear-gradient(135deg, #CD7F32, #B8860B); }
+    .food-rank-name { flex: 1; font-size: 0.82rem; font-weight: 500; }
+    .food-rank-kcal { font-size: 0.78rem; font-weight: 700; color: var(--orange); }
+    .food-rank-count { font-size: 0.62rem; color: var(--text-muted); }
+
+    /* 等价换算 */
+    .equiv-card {
+      background: linear-gradient(135deg, var(--gold-soft), #FFF8E8);
+    }
+    .equiv-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .equiv-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .equiv-item .eq-icon { font-size: 1.1rem; }
+    .equiv-item .eq-val { font-weight: 700; color: var(--gold); margin-left: auto; }
+
+    /* ===== 记录 Tab ===== */
+    .filter-tabs {
+      display: flex; gap: 6px;
+      margin-bottom: 12px;
+    }
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .filter-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .record-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .record-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .record-icon.resist { background: var(--primary-soft); }
+    .record-icon.checkin { background: var(--purple-soft); }
+    .record-icon.bonus { background: var(--gold-soft); }
+    .record-body { flex: 1; min-width: 0; }
+    .record-name { font-size: 0.84rem; font-weight: 600; }
+    .record-detail { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+    .record-detail span { color: var(--orange); font-weight: 600; }
+    .record-right { text-align: right; flex-shrink: 0; }
+    .record-money { font-size: 0.88rem; font-weight: 700; color: var(--gold); }
+    .record-time { font-size: 0.62rem; color: var(--text-muted); }
+    .month-summary {
+      background: var(--card-alt);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      justify-content: space-around;
+      margin-top: 12px;
+    }
+    .ms-item { text-align: center; }
+    .ms-val { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+    .ms-lbl { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== 我的 Tab ===== */
+    .profile-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 8px 0 18px;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #FFF5EE, #FFE8D6);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+    .profile-info h2 { font-size: 1.05rem; font-weight: 600; }
+    .profile-info p { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .badge-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 12px 4px 10px;
+      border-radius: var(--radius-md);
+      background: var(--card-alt);
+      border: 1.5px solid transparent;
+    }
+    .badge-item.unlocked {
+      background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(245,166,35,0.06));
+      border-color: rgba(245,166,35,0.25);
+    }
+    .badge-item.locked { opacity: 0.4; }
+    .badge-item .b-icon { font-size: 1.5rem; }
+    .badge-item .b-name { font-size: 0.6rem; color: var(--text-secondary); text-align: center; }
+    .badge-item.unlocked .b-name { color: var(--gold); font-weight: 600; }
+    .settings-list { display: flex; flex-direction: column; gap: 0; }
+    .setting-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .setting-item:last-child { border-bottom: none; }
+    .setting-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      background: var(--card-alt);
+    }
+    .setting-text { flex: 1; }
+    .setting-text .st-name { font-size: 0.86rem; font-weight: 500; }
+    .setting-text .st-desc { font-size: 0.68rem; color: var(--text-muted); }
+    .setting-arrow { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* ===== PRD 说明区域 ===== */
+    .prd-note {
+      max-width: 1200px;
+      margin: 40px auto 0;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .prd-note h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    .prd-note ul {
+      list-style: none;
+      padding: 0;
+    }
+    .prd-note li {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      padding-left: 16px;
+      position: relative;
+    }
+    .prd-note li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1 class="prototype-title">🐷 减重存钱罐 v2.0</h1>
+<p class="prototype-subtitle">产品原型图 — 4个Tab页面布局设计 | 暖白主题</p>
+
+<div class="prototype-grid">
+
+  <!-- ==================== Tab 1: 首页 ==================== -->
+  <div style="position:relative;">
+    <div class="tab-label">🏠 Tab 1 · 首页</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <!-- 顶栏 -->
+        <header class="top-bar">
+          <div class="logo-area">
+            <div class="logo-icon">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 猪身体 -->
+                <ellipse cx="20" cy="25" rx="14" ry="11" fill="#FFF5E8"/>
+                <ellipse cx="18" cy="23" rx="9" ry="6.5" fill="#FFFFFF"/>
+                <!-- 耳朵 -->
+                <path d="M9 17 Q7 12 10 10 Q12 13 11 17 Z" fill="#FFF5E8" stroke="#FFE0CC" stroke-width="0.8"/>
+                <path d="M31 17 Q33 12 30 10 Q28 13 29 17 Z" fill="#FFF5E8" stroke="#FFE0CC" stroke-width="0.8"/>
+                <path d="M9.8 16.2 Q8.5 13 10.3 11.5 Q11.5 13.5 11 16.2 Z" fill="#FFDDE0"/>
+                <path d="M30.2 16.2 Q31.5 13 29.7 11.5 Q28.5 13.5 29 16.2 Z" fill="#FFDDE0"/>
+                <!-- 眼睛 -->
+                <circle cx="14.5" cy="22" r="1.4" fill="#5A4A3A"/>
+                <circle cx="25.5" cy="22" r="1.4" fill="#5A4A3A"/>
+                <circle cx="14.1" cy="21.6" r="0.45" fill="#FFFFFF"/>
+                <circle cx="25.1" cy="21.6" r="0.45" fill="#FFFFFF"/>
+                <!-- 鼻子 -->
+                <ellipse cx="20" cy="26" rx="4" ry="2.8" fill="#FFEAE8" stroke="#F0C8C0" stroke-width="0.6" fill-opacity="0.7"/>
+                <ellipse cx="18.5" cy="26" rx="0.75" ry="1" fill="#E8A090"/>
+                <ellipse cx="21.5" cy="26" rx="0.75" ry="1" fill="#E8A090"/>
+                <!-- 投币口 -->
+                <rect x="27" y="18.5" width="5.5" height="2.2" rx="1.1" fill="#D4BFA8" transform="rotate(-8 29.75 19.6)"/>
+                <!-- 小短腿 -->
+                <rect x="11" y="34" width="3.5" height="3" rx="1.5" fill="#FFF0E8" stroke="#FFE0CC" stroke-width="0.6"/>
+                <rect x="25.5" y="34" width="3.5" height="3" rx="1.5" fill="#FFF0E8" stroke="#FFE0CC" stroke-width="0.6"/>
+              </svg>
+            </div>
+            <h1 class="app-title">减重存钱罐</h1>
+          </div>
+          <div class="top-right-cards">
+            <div class="mini-stat">
+              <div class="mini-stat-label">累计存下</div>
+              <div class="mini-stat-value gold">¥368</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">少摄入</div>
+              <div class="mini-stat-value orange">9.2k</div>
+            </div>
+          </div>
+        </header>
+
+        <!-- 今日行动 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">⚡</span>
+            <span class="card-title">今日行动</span>
+          </div>
+          <div class="action-row">
+            <button class="btn-action btn-resist">
+              <span class="emoji">🛑</span>
+              <span class="text">我克制住了！</span>
+              <span class="sub">忍住没买高热量</span>
+            </button>
+            <button class="btn-action btn-checkin">
+              <span class="emoji">🌙</span>
+              <span class="text">饥饿感入睡 ✓</span>
+              <span class="sub">带着饥饿感打卡</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 今日摘要（新增） -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📋</span>
+            <span class="card-title">今日摘要</span>
+          </div>
+          <div class="summary-row">
+            <div class="summary-item">
+              <div class="summary-val gold">¥56</div>
+              <div class="summary-lbl">今日存入</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-val orange">1,400</div>
+              <div class="summary-lbl">少摄入 kcal</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-val purple">2次</div>
+              <div class="summary-lbl">克制次数</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 心愿预览 -->
+        <div class="card" style="background: linear-gradient(135deg, #FFFBF5, #FFF8E8);">
+          <div class="card-header">
+            <span class="card-icon">🎁</span>
+            <span class="card-title">心愿礼物</span>
+            <span style="font-size:0.68rem;color:var(--gold);font-weight:600;">详情 →</span>
+          </div>
+          <div class="wish-preview">
+            <div class="wish-img">🎧</div>
+            <div class="wish-info">
+              <div class="wish-name">AirPods Pro</div>
+              <div class="wish-bar-wrap"><div class="wish-bar-fill"></div></div>
+              <div class="wish-pct">¥368 / ¥1,899 · 19%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 打卡进度（精简） -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🔥</span>
+            <span class="card-title">打卡日历</span>
+            <span style="font-size:0.72rem;color:var(--purple);font-weight:600;">连续 5 天 →</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="flex:1;">
+              <div style="font-size:1.6rem;font-weight:800;color:var(--primary);">5<span style="font-size:0.85rem;font-weight:500;color:var(--text-secondary);">天</span></div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">再坚持 1 天奖励 ¥30</div>
+            </div>
+            <svg width="56" height="56" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#E8E4DE" stroke-width="10"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#7C5CFC" stroke-width="10"
+                stroke-dasharray="264" stroke-dashoffset="88" stroke-linecap="round"
+                transform="rotate(-90 50 50)"/>
+              <text x="50" y="54" text-anchor="middle" font-size="20" font-weight="700" fill="#7C5CFC">5/6</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部导航 -->
+      <nav class="bottom-nav">
+        <button class="nav-item active">
+          <span class="nav-icon">🏠</span><span class="nav-label">首页</span>
+        </button>
+        <button class="nav-item">
+          <span class="nav-icon">🎯</span><span class="nav-label">目标</span>
+        </button>
+        <button class="nav-item">
+          <span class="nav-icon">📝</span><span class="nav-label">记录</span>
+        </button>
+        <button class="nav-item">
+          <span class="nav-icon">👤</span><span class="nav-label">我的</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ==================== Tab 2: 目标 ==================== -->
+  <div style="position:relative;">
+    <div class="tab-label">🎯 Tab 2 · 目标</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <header class="top-bar">
+          <div class="logo-area">
+            <h1 class="page-title">🎯 我的目标</h1>
+          </div>
+        </header>
+
+        <!-- 热量统计大卡 -->
+        <div class="stat-big-card">
+          <div class="stat-big-label">🔥 累计少摄入热量</div>
+          <div class="stat-big-num">28,650 <span class="stat-big-unit">kcal</span></div>
+          <div class="stat-big-sub">≈ 减掉 <strong>3.7 kg</strong> 脂肪 · 克制 42 次</div>
+        </div>
+
+        <!-- 三项子数据 -->
+        <div class="stat-row-3">
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--orange);">8,420</div>
+            <div class="stat-mini-lbl">本周 kcal</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--purple);">32,100</div>
+            <div class="stat-mini-lbl">本月 kcal</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--green);">3.7kg</div>
+            <div class="stat-mini-lbl">等价减脂</div>
+          </div>
+        </div>
+
+        <!-- 体重目标 -->
+        <div class="card weight-card">
+          <div class="card-header">
+            <span class="card-icon">⚖️</span>
+            <span class="card-title">体重目标</span>
+            <span style="font-size:0.65rem;color:var(--blue);font-weight:600;background:#fff;padding:2px 8px;border-radius:8px;">编辑</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <div>
+              <span style="font-size:0.72rem;color:var(--text-muted);">当前</span>
+              <span style="font-size:1.2rem;font-weight:700;margin-left:4px;">58.5 kg</span>
+            </div>
+            <div style="text-align:right;">
+              <span style="font-size:0.72rem;color:var(--text-muted);">目标</span>
+              <span style="font-size:1.2rem;font-weight:700;margin-left:4px;color:var(--green);">52.0 kg</span>
+            </div>
+          </div>
+          <div class="weight-progress">
+            <span class="weight-dot-start">58.5</span>
+            <div class="weight-bar-track">
+              <div class="weight-bar-fill">
+                <div class="weight-bar-marker"></div>
+              </div>
+            </div>
+            <span class="weight-dot-end">52.0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;">
+            <span style="font-size:0.68rem;color:var(--text-muted);">还需减 6.5 kg</span>
+            <span style="font-size:0.68rem;color:var(--green);font-weight:600;">完成 27%</span>
+          </div>
+        </div>
+
+        <!-- 等价换算 -->
+        <div class="card equiv-card">
+          <div class="card-header">
+            <span class="card-icon">🏃</span>
+            <span class="card-title">等价运动量</span>
+          </div>
+          <div class="equiv-list">
+            <div class="equiv-item">
+              <span class="eq-icon">🏃</span>跑步
+              <span class="eq-val">47.6 小时</span>
+            </div>
+            <div class="equiv-item">
+              <span class="eq-icon">🏊</span>游泳
+              <span class="eq-val">33.3 小时</span>
+            </div>
+            <div class="equiv-item">
+              <span class="eq-icon">🚴</span>骑行
+              <span class="eq-val">57.3 小时</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 食物 Top 排行 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🍜</span>
+            <span class="card-title">克制食物 TOP 3</span>
+          </div>
+          <div class="food-rank-item">
+            <span class="food-rank-num n1">1</span>
+            <span class="food-rank-name">火锅</span>
+            <span class="food-rank-kcal">18,000 kcal</span>
+            <span class="food-rank-count">10 次</span>
+          </div>
+          <div class="food-rank-item">
+            <span class="food-rank-num n2">2</span>
+            <span class="food-rank-name">烧烤夜宵</span>
+            <span class="food-rank-kcal">7,200 kcal</span>
+            <span class="food-rank-count">6 次</span>
+          </div>
+          <div class="food-rank-item">
+            <span class="food-rank-num n3">3</span>
+            <span class="food-rank-name">奶茶</span>
+            <span class="food-rank-kcal">3,150 kcal</span>
+            <span class="food-rank-count">7 次</span>
+          </div>
+        </div>
+
+        <!-- 心愿详情 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🎁</span>
+            <span class="card-title">心愿礼物</span>
+            <span style="font-size:0.65rem;color:var(--primary);font-weight:600;background:var(--primary-soft);padding:2px 8px;border-radius:8px;">编辑</span>
+          </div>
+          <div class="wish-preview">
+            <div class="wish-img" style="width:64px;height:64px;font-size:2rem;">🎧</div>
+            <div class="wish-info">
+              <div class="wish-name" style="font-size:1rem;">AirPods Pro</div>
+              <div class="wish-bar-wrap" style="height:10px;border-radius:5px;"><div class="wish-bar-fill" style="width:19%;border-radius:5px;"></div></div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px;">
+                <span style="font-size:0.78rem;color:var(--text-secondary);">已存 ¥368</span>
+                <span style="font-size:0.78rem;font-weight:700;color:var(--gold);">目标 ¥1,899</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></button>
+        <button class="nav-item active"><span class="nav-icon">🎯</span><span class="nav-label">目标</span></button>
+        <button class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">记录</span></button>
+        <button class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">我的</span></button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ==================== Tab 3: 记录 ==================== -->
+  <div style="position:relative;">
+    <div class="tab-label">📝 Tab 3 · 记录</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <header class="top-bar">
+          <h1 class="page-title">📝 自律账本</h1>
+        </header>
+
+        <!-- 筛选标签 -->
+        <div class="filter-tabs">
+          <button class="filter-tab active">全部</button>
+          <button class="filter-tab">克制 🛑</button>
+          <button class="filter-tab">打卡 🌙</button>
+          <button class="filter-tab">奖励 🎁</button>
+        </div>
+
+        <!-- 日期分组 -->
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:8px 4px 6px;">今天 · 11月25日</div>
+
+        <div class="card" style="padding:4px 12px;">
+          <div class="record-item">
+            <div class="record-icon resist">🛑</div>
+            <div class="record-body">
+              <div class="record-name">火锅</div>
+              <div class="record-detail">少摄入 <span>1,800 kcal</span> · 午餐忍住了</div>
+            </div>
+            <div class="record-right">
+              <div class="record-money">¥120</div>
+              <div class="record-time">12:30</div>
+            </div>
+          </div>
+          <div class="record-item">
+            <div class="record-icon resist">🛑</div>
+            <div class="record-body">
+              <div class="record-name">薛记炒货</div>
+              <div class="record-detail">少摄入 <span>520 kcal</span> · 下午茶</div>
+            </div>
+            <div class="record-right">
+              <div class="record-money">¥28</div>
+              <div class="record-time">15:45</div>
+            </div>
+          </div>
+          <div class="record-item">
+            <div class="record-icon checkin">🌙</div>
+            <div class="record-body">
+              <div class="record-name">饥饿感入睡打卡</div>
+              <div class="record-detail">连续第 5 天</div>
+            </div>
+            <div class="record-right">
+              <div class="record-money" style="color:var(--purple);">+ streak</div>
+              <div class="record-time">23:00</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text-muted);padding:12px 4px 6px;">昨天 · 11月24日</div>
+
+        <div class="card" style="padding:4px 12px;">
+          <div class="record-item">
+            <div class="record-icon resist">🛑</div>
+            <div class="record-body">
+              <div class="record-name">炸鸡套餐</div>
+              <div class="record-detail">少摄入 <span>850 kcal</span></div>
+            </div>
+            <div class="record-right">
+              <div class="record-money">¥35</div>
+              <div class="record-time">19:20</div>
+            </div>
+          </div>
+          <div class="record-item">
+            <div class="record-icon resist">🛑</div>
+            <div class="record-body">
+              <div class="record-name">奶茶（大杯）</div>
+              <div class="record-detail">少摄入 <span>450 kcal</span></div>
+            </div>
+            <div class="record-right">
+              <div class="record-money">¥18</div>
+              <div class="record-time">14:10</div>
+            </div>
+          </div>
+          <div class="record-item">
+            <div class="record-icon bonus">🎁</div>
+            <div class="record-body">
+              <div class="record-name">3日连签奖励</div>
+              <div class="record-detail">奖金自动存入心愿金</div>
+            </div>
+            <div class="record-right">
+              <div class="record-money" style="color:var(--green);">+¥30</div>
+              <div class="record-time">自动</div>
+            </div>
+          </div>
+          <div class="record-item">
+            <div class="record-icon checkin">🌙</div>
+            <div class="record-body">
+              <div class="record-name">饥饿感入睡打卡</div>
+              <div class="record-detail">连续第 4 天</div>
+            </div>
+            <div class="record-right">
+              <div class="record-money" style="color:var(--purple);">✓</div>
+              <div class="record-time">23:30</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 月度汇总 -->
+        <div class="month-summary">
+          <div class="ms-item">
+            <div class="ms-val">12<span style="font-size:0.7rem;color:var(--text-muted);font-weight:500;">次</span></div>
+            <div class="ms-lbl">本月克制</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--orange);">32.1k</div>
+            <div class="ms-lbl">少摄入 kcal</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--gold);">¥398</div>
+            <div class="ms-lbl">本月存入</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--purple);">18<span style="font-size:0.7rem;color:var(--text-muted);font-weight:500;">天</span></div>
+            <div class="ms-lbl">本月打卡</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></button>
+        <button class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">目标</span></button>
+        <button class="nav-item active"><span class="nav-icon">📝</span><span class="nav-label">记录</span></button>
+        <button class="nav-item"><span class="nav-icon">👤</span><span class="nav-label">我的</span></button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ==================== Tab 4: 我的 ==================== -->
+  <div style="position:relative;">
+    <div class="tab-label">👤 Tab 4 · 我的</div>
+    <div class="phone-frame">
+      <div class="phone-content">
+        <header class="top-bar">
+          <h1 class="page-title">👤 我的</h1>
+        </header>
+
+        <!-- 个人信息卡 -->
+        <div class="profile-header">
+          <div class="profile-avatar">🐷</div>
+          <div class="profile-info">
+            <h2>Sandra</h2>
+            <p>已坚持 42 天 · 加入于 2025.10.14</p>
+          </div>
+        </div>
+
+        <!-- 数据概览 -->
+        <div class="summary-row" style="margin-bottom:16px;">
+          <div class="summary-item">
+            <div class="summary-val gold">¥368</div>
+            <div class="summary-lbl">累计存下</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val orange">28.6k</div>
+            <div class="summary-lbl">少摄入 kcal</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val purple">3.7kg</div>
+            <div class="summary-lbl">等价减脂</div>
+          </div>
+        </div>
+
+        <!-- 成就徽章 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🏆</span>
+            <span class="card-title">成就徽章</span>
+            <span style="font-size:0.72rem;color:var(--gold);font-weight:600;">3/8 已解锁</span>
+          </div>
+          <div class="badge-grid">
+            <div class="badge-item unlocked">
+              <span class="b-icon">🛑</span>
+              <span class="b-name">初次克制</span>
+            </div>
+            <div class="badge-item unlocked">
+              <span class="b-icon">🔥</span>
+              <span class="b-name">三日燃火</span>
+            </div>
+            <div class="badge-item unlocked">
+              <span class="b-icon">💰</span>
+              <span class="b-name">百元存钱罐</span>
+            </div>
+            <div class="badge-item locked">
+              <span class="b-icon">⚡</span>
+              <span class="b-name">周周坚持</span>
+            </div>
+            <div class="badge-item locked">
+              <span class="b-icon">💎</span>
+              <span class="b-name">月度传奇</span>
+            </div>
+            <div class="badge-item locked">
+              <span class="b-icon">🏦</span>
+              <span class="b-name">小富翁</span>
+            </div>
+            <div class="badge-item locked">
+              <span class="b-icon">🛡️</span>
+              <span class="b-name">十次护盾</span>
+            </div>
+            <div class="badge-item locked">
+              <span class="b-icon">🎯</span>
+              <span class="b-name">半程目标</span>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:10px;font-size:0.75rem;color:var(--primary);cursor:pointer;">查看全部成就 →</div>
+        </div>
+
+        <!-- 设置列表 -->
+        <div class="card" style="padding:4px 0;">
+          <div class="setting-item">
+            <div class="setting-icon">⚖️</div>
+            <div class="setting-text">
+              <div class="st-name">修改目标体重</div>
+              <div class="st-desc">当前 58.5 kg → 目标 52.0 kg</div>
+            </div>
+            <span class="setting-arrow">›</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon">🎁</div>
+            <div class="setting-text">
+              <div class="st-name">修改心愿礼物</div>
+              <div class="st-desc">AirPods Pro · 已存 19%</div>
+            </div>
+            <span class="setting-arrow">›</span>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon">📤</div>
+            <div class="setting-text">
+              <div class="st-name">导出数据</div>
+              <div class="st-desc">导出所有记录为 JSON</div>
+            </div>
+            <span class="setting-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></button>
+        <button class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">目标</span></button>
+        <button class="nav-item"><span class="nav-icon">📝</span><span class="nav-label">记录</span></button>
+        <button class="nav-item active"><span class="nav-icon">👤</span><span class="nav-label">我的</span></button>
+      </nav>
+    </div>
+  </div>
+
+</div><!-- end prototype-grid -->
+
+<!-- PRD 说明 -->
+<div class="prd-note">
+  <h3>📋 原型说明</h3>
+  <ul>
+    <li><strong>首页</strong>：核心操作入口，双数据展示（累计存下 + 少摄入热量），今日行动按钮 + 摘要 + 心愿预览 + 打卡进度</li>
+    <li><strong>目标</strong>：热量统计大卡（总 kcal + 等价减脂 kg），体重目标进度条，等价运动换算，食物克制 TOP 排行，心愿详情</li>
+    <li><strong>记录</strong>：筛选标签（全部/克制/打卡/奖励），每条记录显示金额 + 对应 kcal，底部月度汇总</li>
+    <li><strong>我的</strong>：个人信息，数据概览三件套，成就徽章网格，设置列表（体重/心愿/导出/清空）</li>
+    <li><strong>底部导航</strong>：4 个 Tab（首页/目标/记录/我的），选中态带紫色顶部指示条</li>
+    <li><strong>新增字段</strong>：currentWeight / targetWeight / totalCaloriesSaved / 食物精确 kcal 映射表</li>
+    <li><strong>核心公式</strong>：7700 kcal = 1kg 脂肪；自定义食物默认按 ¥×25 kcal 估算</li>
+  </ul>
+</div>
+
+</body>
+</html>

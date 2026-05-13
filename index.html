@@ -8,7 +8,7 @@
   <title>减重存钱罐 | 减肥 = 存钱</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- ===== 主容器 ===== -->
@@ -74,7 +74,7 @@
         <h1 class="app-title">减重存钱罐</h1>
       </div>
       <div class="top-bar-right">
-        <div class="total-saved-display" onclick="showStats()">
+        <div class="total-saved-display" onclick="switchTab('goal')">
           <div class="saved-icon-wrap">💰</div>
           <div class="saved-info">
             <span class="saved-label">累计存下</span>
@@ -84,10 +84,14 @@
       </div>
     </header>
 
-    <!-- ===== 核心数据卡片区域 ===== -->
-    <section class="dashboard-grid">
+    <!-- ===== 页面容器：Tab切换 ===== -->
+    <div class="tab-pages">
 
-      <!-- 心愿礼物卡片 -->
+      <!-- ===== 首页 ===== -->
+      <div class="tab-page tab-home active" id="pageHome">
+        <section class="dashboard-grid">
+
+          <!-- 心愿礼物卡片 -->
       <div class="card wish-card" id="wishCardSection">
         <div class="card-header">
           <span class="card-icon">🎁</span>
@@ -136,7 +140,7 @@
       </div>
 
       <!-- 打卡连续天数 -->
-      <div class="card streak-card">
+      <div class="card streak-card" onclick="openCalendarModal()">
         <div class="streak-header">
           <div class="streak-flame">🔥</div>
           <span class="streak-card-title">打卡日历</span>
@@ -160,21 +164,170 @@
         </div>
       </div>
 
-    </section>
+        </section>
 
-    <!-- ===== 历史记录列表 ===== -->
-    <section class="card history-card">
-      <div class="card-header">
-        <span class="card-icon">📜</span>
-        <span class="card-title">自律账本</span>
-        <button class="btn-mini btn-clear-history" onclick="clearAllHistory()">清空</button>
-      </div>
-      <div class="history-list" id="historyList">
-        <div class="history-empty" id="historyEmpty">
-          <p>🌟 还没有记录，开始你的第一次克制吧！</p>
+        <!-- 历史记录列表（首页摘要） -->
+        <section class="card history-card">
+          <div class="card-header">
+            <span class="card-icon">📜</span>
+            <span class="card-title">自律账本</span>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty" id="historyEmpty">
+              <p>🌟 还没有记录，开始你的第一次克制吧！</p>
+            </div>
+          </div>
+        </section>
+      </div><!-- /首页 -->
+
+      <!-- ===== 目标页 ===== -->
+      <div class="tab-page tab-goal" id="pageGoal">
+        <h1 class="page-title">🎯 我的目标</h1>
+
+        <!-- 热量统计大卡 -->
+        <div class="stat-big-card">
+          <div class="stat-big-label">🔥 累计少摄入热量</div>
+          <div class="stat-big-num"><span id="goalTotalCalories">0</span> <span class="stat-big-unit">kcal</span></div>
+          <div class="stat-big-sub">≈ 减掉 <strong id="goalKgLost">0</strong> kg 脂肪 · 克制 <strong id="goalResistCount">0</strong> 次</div>
         </div>
-      </div>
-    </section>
+
+        <!-- 三项子数据 -->
+        <div class="stat-row-3">
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--orange);" id="goalWeekCalories">0</div>
+            <div class="stat-mini-lbl">本周 kcal</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--purple);" id="goalMonthCalories">0</div>
+            <div class="stat-mini-lbl">本月 kcal</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-val" style="color:var(--green);" id="goalKgEq">0kg</div>
+            <div class="stat-mini-lbl">等价减脂</div>
+          </div>
+        </div>
+
+        <!-- 心愿详情 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🎁</span>
+            <span class="card-title">心愿礼物</span>
+            <button class="btn-mini" onclick="openWishModal()" style="font-size:0.65rem;color:var(--primary);font-weight:600;background:var(--primary-soft);padding:2px 8px;border-radius:8px;border:none;cursor:pointer;">编辑</button>
+          </div>
+          <div id="goalWishDisplay">
+            <div class="wish-empty-state">
+              <div class="empty-icon">🎯</div>
+              <p>还没有心愿礼物<br><small>点击编辑添加一个吧</small></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 克制食物 TOP 排行 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🍜</span>
+            <span class="card-title">克制食物 TOP 3</span>
+          </div>
+          <div id="foodRankList">
+            <div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">暂无克制记录</div>
+          </div>
+        </div>
+      </div><!-- /目标页 -->
+
+      <!-- ===== 记录页 ===== -->
+      <div class="tab-page tab-history" id="pageHistory">
+        <h1 class="page-title">📝 自律账本</h1>
+
+        <!-- 筛选标签 -->
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="all">全部</button>
+          <button class="filter-tab" data-filter="resist">克制 🛑</button>
+          <button class="filter-tab" data-filter="checkin">打卡 🌙</button>
+          <button class="filter-tab" data-filter="bonus">奖励 🎁</button>
+        </div>
+
+        <!-- 记录列表 -->
+        <div id="recordPageList">
+          <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:0.85rem;">🌟 还没有记录，开始你的第一次克制吧！</div>
+        </div>
+
+        <!-- 月度汇总 -->
+        <div class="month-summary" id="monthSummary">
+          <div class="ms-item">
+            <div class="ms-val"><span id="msResistCount">0</span><span style="font-size:0.7rem;color:var(--text-muted);font-weight:500;">次</span></div>
+            <div class="ms-lbl">本月克制</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--orange);" id="msCalories">0</div>
+            <div class="ms-lbl">少摄入 kcal</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--gold);" id="msSaved">¥0</div>
+            <div class="ms-lbl">本月存入</div>
+          </div>
+          <div class="ms-item">
+            <div class="ms-val" style="color:var(--purple);" id="msCheckins">0<span style="font-size:0.7rem;color:var(--text-muted);font-weight:500;">天</span></div>
+            <div class="ms-lbl">本月打卡</div>
+          </div>
+        </div>
+      </div><!-- /记录页 -->
+
+      <!-- ===== 我的页面 ===== -->
+      <div class="tab-page tab-mine" id="pageMine">
+        <h1 class="page-title">👤 我的</h1>
+
+<!-- 个人信息卡 -->
+<div class="profile-header" onclick="openProfileModal()">
+<div class="profile-avatar">🐷</div>
+<div class="profile-info">
+<h2 id="profileName">自律达人</h2>
+<p id="profileDays">已坚持 0 天 · 今天加入</p>
+</div>
+</div>
+
+        <!-- 数据概览 -->
+        <div class="summary-row">
+          <div class="summary-item">
+            <div class="summary-val gold" id="mineTotalSaved">¥0</div>
+            <div class="summary-lbl">累计存下</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val orange" id="mineCalories">0</div>
+            <div class="summary-lbl">少摄入 kcal</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val purple" id="mineKg">0kg</div>
+            <div class="summary-lbl">等价减脂</div>
+          </div>
+        </div>
+
+        <!-- 成就徽章 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🏆</span>
+            <span class="card-title">成就徽章</span>
+            <span style="font-size:0.72rem;color:var(--gold);font-weight:600;" id="mineBadgeCount">0/8 已解锁</span>
+          </div>
+          <div class="badge-grid" id="mineBadgeGrid">
+            <!-- JS动态渲染 -->
+          </div>
+          <div style="text-align:center;margin-top:16px;margin-bottom:4px;font-size:0.75rem;color:var(--primary);cursor:pointer;" onclick="openBadgeModal()">查看全部成就 →</div>
+        </div>
+
+        <!-- 设置列表 -->
+        <div class="card" style="padding:4px 0;">
+          <div class="setting-item" onclick="openWishModal()">
+            <div class="setting-icon">🎁</div>
+            <div class="setting-text">
+              <div class="st-name">修改心愿礼物</div>
+              <div class="st-desc" id="settingWishDesc">尚未设置心愿</div>
+            </div>
+            <span class="setting-arrow">›</span>
+          </div>
+</div>
+</div><!-- /我的页面 -->
+
+    </div><!-- /tab-pages -->
 
   </div>
 
@@ -295,23 +448,152 @@
     </div>
   </div>
 
-  <!-- ===== 底部Tab导航（移动端） ===== -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-tab="home">
+  <!-- ===== 账户编辑弹窗 ===== -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal profile-modal">
+      <h2 class="modal-title">👤 我的账户</h2>
+      
+      <!-- 头像自定义（图片上传） -->
+      <div class="profile-edit-section" style="width: 100%;">
+        <label class="profile-label">头像</label>
+        <div class="avatar-upload-group">
+          <input type="file" id="avatarUpload" class="avatar-file-input" accept="image/*" style="display:none;">
+          <div class="avatar-container" onclick="document.getElementById('avatarUpload').click()">
+            <canvas id="avatarCanvas" class="avatar-preview-canvas"></canvas>
+            <img id="avatarPreview" class="avatar-preview-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23FFF4E0' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='50' text-anchor='middle' dy='.3em'%3E🐷%3C/text%3E%3C/svg%3E" alt="头像预览">
+            <div class="avatar-edit-overlay">✏️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 昵称编辑 -->
+      <div class="profile-edit-section">
+        <label class="profile-label">昵称</label>
+        <input type="text" id="profileNicknameInput" class="profile-input" placeholder="输入你的昵称" maxlength="20">
+      </div>
+
+      <!-- 账户信息（只读） -->
+      <div class="profile-edit-section">
+        <label class="profile-label">加入日期</label>
+        <div class="profile-info-text" id="profileJoinDate">加载中...</div>
+      </div>
+
+      <div class="profile-edit-section">
+        <label class="profile-label">账户ID</label>
+        <div class="profile-info-text" id="profileAccountId">加载中...</div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="modal-actions">
+        <button class="btn-confirm" onclick="closeProfileModal()">取消</button>
+        <button class="btn-confirm btn-primary" onclick="saveProfileChanges()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 食物标签管理弹窗 ===== -->
+  <div class="modal-overlay" id="foodManageModal">
+    <div class="modal food-manage-modal">
+      <h2 class="modal-title">🍽️ 管理食物标签</h2>
+      <p class="modal-desc">添加、编辑或删除你的克制食物清单</p>
+
+      <!-- 添加新标签 -->
+      <div class="food-add-row">
+        <input type="text" id="newFoodEmoji" class="food-emoji-input" placeholder="emoji" maxlength="4">
+        <input type="text" id="newFoodName" class="food-name-input" placeholder="名称（如：麻辣烫）">
+        <input type="number" id="newFoodPrice" class="food-price-input" placeholder="价格" min="1" max="9999">
+        <button class="btn-mini btn-add-food" onclick="addFoodItem()">＋ 添加</button>
+      </div>
+
+      <!-- 当前标签列表 -->
+      <div class="food-manage-list" id="foodManageList">
+        <!-- JS动态渲染 -->
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-confirm" style="flex:1" onclick="saveFoodListAndClose()">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 登录/注册弹窗 ===== -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal auth-modal">
+      <div class="auth-modal-glow"></div>
+
+      <!-- 登录面板 -->
+      <div class="auth-panel" id="loginPanel">
+        <div class="auth-logo">🐷</div>
+        <h2 class="auth-title">减重存钱罐</h2>
+        <p class="auth-subtitle">减肥 = 存钱，自律即财富</p>
+
+        <div class="auth-form">
+          <div class="auth-field">
+            <span class="auth-field-icon">📧</span>
+            <input type="text" id="loginUsername" class="auth-input" placeholder="用户名 / 邮箱" autocomplete="username">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-icon">🔒</span>
+            <input type="password" id="loginPassword" class="auth-input" placeholder="密码" autocomplete="current-password">
+          </div>
+          <button class="btn-auth-primary" id="btnLogin" onclick="handleLogin()">登 录</button>
+        </div>
+
+        <div class="auth-switch">
+          还没有账号？<a href="javascript:switchAuthPanel('register')">立即注册</a>
+        </div>
+      </div>
+
+      <!-- 注册面板 -->
+      <div class="auth-panel" id="registerPanel" style="display:none;">
+        <div class="auth-logo">🐷</div>
+        <h2 class="auth-title">创建账号</h2>
+        <p class="auth-subtitle">开启你的减脂存钱之旅</p>
+
+        <div class="auth-form">
+          <div class="auth-field">
+            <span class="auth-field-icon">😊</span>
+            <input type="text" id="regNickname" class="auth-input" placeholder="昵称（如：小猪存钱）" maxlength="12">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-icon">📧</span>
+            <input type="text" id="regUsername" class="auth-input" placeholder="用户名（用于登录）" autocomplete="username">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-icon">🔒</span>
+            <input type="password" id="regPassword" class="auth-input" placeholder="密码（至少6位）" autocomplete="new-password">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-icon">🔒</span>
+            <input type="password" id="regPassword2" class="auth-input" placeholder="确认密码" autocomplete="new-password">
+          </div>
+          <button class="btn-auth-primary" id="btnRegister" onclick="handleRegister()">注 册</button>
+        </div>
+
+        <div class="auth-switch">
+          已有账号？<a href="javascript:switchAuthPanel('login')">去登录</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 底部Tab导航 ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
       <span class="nav-icon">🏠</span>
       <span class="nav-label">首页</span>
     </button>
-    <button class="nav-item" data-tab="stats" onclick="showStats()">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">统计</span>
+    <button class="nav-item" data-tab="goal" onclick="switchTab('goal')">
+      <span class="nav-icon">🎯</span>
+      <span class="nav-label">目标</span>
     </button>
-    <button class="nav-item" data-tab="wish" onclick="openWishModal()">
-      <span class="nav-icon nav-center-icon">🎯</span>
-      <span class="nav-label">心愿</span>
-    </button>
-    <button class="nav-item" data-tab="history">
+    <button class="nav-item" data-tab="history" onclick="switchTab('history')">
       <span class="nav-icon">📝</span>
       <span class="nav-label">记录</span>
+    </button>
+    <button class="nav-item" data-tab="mine" onclick="switchTab('mine')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">我的</span>
     </button>
   </nav>
 
