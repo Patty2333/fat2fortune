@@ -480,7 +480,7 @@ function migrateDataToPatty() {
       id: simpleHash('patty_' + Date.now()),
       nickname: 'Patty',
       avatar: '🐷',
-      passwordHash: simpleHash('patty123'),
+      passwordHash: simpleHash('patty24puth'),
       createdAt: new Date().toISOString(),
     };
     saveUsers(users);
