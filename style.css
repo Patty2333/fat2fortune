@@ -1931,7 +1931,7 @@ line-height: 1;
   }
 
 .tab-pages {
-  padding-top: 40px;
+  padding-top: 56px;
 }
 
   /* 桌面端：累计存下区域更大 */
@@ -2638,7 +2638,7 @@ line-height: 1;
   position: relative;
   min-height: calc(100vh - 120px);
   /* 为固定的顶部导航栏留出空间 */
-  padding-top: 24px;
+  padding-top: 48px;
 }
 
 .tab-page {
