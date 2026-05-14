@@ -1719,6 +1719,8 @@ body {
 .bottom-nav {
   position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 500;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
@@ -1729,16 +1731,15 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 16px 22px;
-  /* 宽度由 .app-container > .bottom-nav 规则控制 */
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* 底部导航栏跟随容器宽度（手机端） */
 .app-container > .bottom-nav {
-  left: 0;
-  transform: none;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  /* 不需要了，因为bottom-nav不在app-container内 */
 }
 
 .nav-item {
