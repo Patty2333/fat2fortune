@@ -2153,8 +2153,10 @@ line-height: 1;
   .bottom-nav {
     width: 680px;
     max-width: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    transform: none;
   }
 
 .app-container {
@@ -2197,6 +2199,10 @@ line-height: 1;
   .bottom-nav {
     width: 760px;
     max-width: 100%;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    transform: none;
   }
 
   .dashboard-grid {
