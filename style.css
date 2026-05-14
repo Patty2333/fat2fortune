@@ -1871,13 +1871,151 @@ line-height: 1;
     font-size: 0.74rem;
   }
 
-.bottom-nav {
-  width: 100%;
-  max-width: 100vw;
-  border-radius: 0;
-  left: 0;
-  transform: none;
-}
+  .bottom-nav {
+    width: 100%;
+    max-width: 100vw;
+    border-radius: 0;
+    left: 0;
+    transform: none;
+  }
+
+  /* 手机端弹窗适配 */
+  .modal {
+    padding: 24px 20px;
+    max-width: calc(100vw - 32px);
+    border-radius: 20px;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .modal-desc {
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    font-size: 0.78rem;
+    margin-bottom: 6px;
+  }
+
+  .food-presets {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .food-chip {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
+  .amount-input-wrap {
+    padding: 10px 12px;
+  }
+
+  .amount-input {
+    font-size: 1rem;
+  }
+
+  .btn-confirm {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+
+  /* 庆祝弹窗手机端适配 */
+  .celebration-content {
+    padding: 32px 24px;
+    max-width: calc(100vw - 32px);
+    border-radius: 20px;
+  }
+
+  .celebration-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+
+  .celebration-title {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+
+  .celebration-text {
+    font-size: 0.88rem;
+    margin-bottom: 12px;
+    max-width: 100%;
+  }
+
+  .celebration-amount {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+
+  .btn-celebration-close {
+    padding: 12px 28px;
+    font-size: 0.95rem;
+  }
+
+  /* 登录/注册弹窗手机端适配 */
+  .auth-modal {
+    max-width: calc(100vw - 32px);
+    width: 100%;
+    padding: 28px 20px 24px;
+    border-radius: 20px;
+  }
+
+  .auth-title {
+    font-size: 1.4rem;
+  }
+
+  .auth-input {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+
+  .btn-auth {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+
+  .auth-switch {
+    font-size: 0.82rem;
+  }
+
+  /* 账户编辑弹窗手机端适配 */
+  .profile-modal {
+    width: 100%;
+    max-width: calc(100vw - 32px);
+    max-height: 85vh;
+    border-radius: 20px;
+  }
+
+  .profile-label {
+    font-size: 0.82rem;
+  }
+
+  .profile-input {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+
+  .avatar-preview-image {
+    width: 90px;
+    height: 90px;
+    border-width: 2px;
+  }
+
+  .avatar-edit-overlay {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
 }
 
 /* ---- 平板竖屏 & 桌面端（统一 2×2 等高布局） ---- */
