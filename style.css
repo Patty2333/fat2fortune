@@ -494,10 +494,11 @@ body {
 }
 
 .action-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
   gap: 14px;
-  align-items: start;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
 .btn-action {
@@ -2097,12 +2098,9 @@ line-height: 1;
     grid-row: span 1;
   }
 
-  .action-buttons {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .action-buttons .btn-action {
     padding: 18px 12px;
+    flex: 1;
   }
 
   .btn-sub {
