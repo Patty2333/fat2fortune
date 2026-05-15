@@ -1110,7 +1110,9 @@ function confirmResist() {
 
     data.history.push(record);
     data.totalSaved += amount;
-    data.wish.saved += amount;
+    if (data.wish) {
+      data.wish.saved += amount;
+    }
 
     saveData(data);
 
