@@ -2082,9 +2082,6 @@ line-height: 1;
   .dashboard-grid {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    /* 关键：让每行两张卡片等高 */
-    grid-auto-rows: 1fr;
-    align-items: stretch;
   }
 
   /* 所有卡片都占1格，不跨行跨列 */
