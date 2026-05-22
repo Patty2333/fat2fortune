@@ -498,7 +498,7 @@ body {
   display: flex;
   flex-direction: row;
   gap: 14px;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
 }
 
@@ -517,6 +517,7 @@ body {
   overflow: hidden;
   flex: 1;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 /* 按钮顶部光泽层 */
