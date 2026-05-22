@@ -486,6 +486,7 @@ body {
 .action-card {
   background: linear-gradient(135deg, #F8F6F4, #F2EFEC);
   border-color: rgba(180, 170, 165, 0.12);
+  align-self: start;
 }
 
 .action-card:hover {
@@ -497,8 +498,8 @@ body {
   display: flex;
   flex-direction: row;
   gap: 14px;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .btn-action {
@@ -514,8 +515,8 @@ body {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
-  height: auto;
-  min-height: auto;
+  flex: 1;
+  min-width: 0;
 }
 
 /* 按钮顶部光泽层 */
