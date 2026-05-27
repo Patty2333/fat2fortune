@@ -3462,3 +3462,83 @@ line-height: 1;
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+/* ===== 多心愿列表样式 ===== */
+.wish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wish-list .wish-active {
+  position: relative;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.wish-list .wish-active.wish-selected {
+  border-color: var(--accent-gold);
+  background: var(--accent-gold-soft);
+}
+
+.wish-list .wish-active:not(.wish-selected):hover {
+  border-color: var(--border-color);
+}
+
+.wish-edit-btn,
+.wish-delete-btn {
+  position: absolute;
+  top: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  z-index: 2;
+}
+
+.wish-edit-btn {
+  right: 28px;
+}
+
+.wish-delete-btn {
+  right: 4px;
+  color: #E55A2B;
+}
+
+.wish-edit-btn:hover,
+.wish-delete-btn:hover {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+}
+
+/* 目标页心愿列表 */
+.goal-wish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-wish-list .wish-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.goal-wish-list .wish-preview.wish-selected {
+  border-color: var(--accent-gold);
+  background: var(--accent-gold-soft);
+}
+
+.goal-wish-list .wish-preview:not(.wish-selected):hover {
+  border-color: var(--border-color);
+}

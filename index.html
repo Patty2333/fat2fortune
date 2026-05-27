@@ -212,7 +212,7 @@
           <div class="card-header">
             <span class="card-icon">🎁</span>
             <span class="card-title">心愿礼物</span>
-            <button class="btn-mini" onclick="openWishModal()" style="font-size:0.65rem;color:var(--primary);font-weight:600;background:var(--primary-soft);padding:2px 8px;border-radius:8px;border:none;cursor:pointer;">编辑</button>
+            <button class="btn-mini" onclick="openWishModal(getActiveWish()?.id)" style="font-size:0.65rem;color:var(--primary);font-weight:600;background:var(--primary-soft);padding:2px 8px;border-radius:8px;border:none;cursor:pointer;">编辑</button>
           </div>
           <div id="goalWishDisplay">
             <div class="wish-empty-state">
@@ -316,7 +316,7 @@
 
         <!-- 设置列表 -->
         <div class="card" style="padding:4px 0;">
-          <div class="setting-item" onclick="openWishModal()">
+          <div class="setting-item" onclick="openWishModal(getActiveWish()?.id)">
             <div class="setting-icon">🎁</div>
             <div class="setting-text">
               <div class="st-name">修改心愿礼物</div>

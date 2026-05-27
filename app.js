@@ -5,8 +5,9 @@
 
 // ===== 数据模型 =====
 const DEFAULT_DATA = {
-  wish: null,              // 当前心愿礼物 { name, target, image, saved }
-  history: [],             // 历史记录 [{ type, name, amount, note, timestamp }]
+  wishes: [],              // 心愿礼物列表 [{ id, name, target, image, saved }]
+  activeWishId: null,      // 当前选中的心愿ID（存钱目标）
+  history: [],             // 历史记录 [{ type, name, amount, note, timestamp, wishId? }]
   checkins: [],            // 打卡日期列表 ['2025-05-10', ...]
   totalSaved: 0,           // 累计存钱总额
   bonusEarned: 0,          // 打卡奖金累计
@@ -80,8 +81,12 @@ const ACHIEVEMENTS = [
     icon: '🎯',
     name: '半程目标',
     desc: '心愿礼物进度达到50%！离梦想又近了一大步。',
-    condition: (d) => d.wish && d.wish.target > 0 && (d.wish.saved / d.wish.target) >= 0.5,
-    progress: (d) => (d.wish && d.wish.target > 0) ? Math.min(1, d.wish.saved / d.wish.target) : 0,
+    condition: (d) => (d.wishes && d.wishes.some(w => w.target > 0 && (w.saved / w.target) >= 0.5)),
+    progress: (d) => {
+      if (!d.wishes || d.wishes.length === 0) return 0;
+      const maxProg = Math.max(...d.wishes.filter(w => w.target > 0).map(w => w.saved / w.target), 0);
+      return Math.min(1, maxProg);
+    },
   },
 ];
 
@@ -394,7 +399,28 @@ function loadData() {
     const dataKey = user ? DATA_PREFIX + user.username : 'fat2fortune_data';
     const raw = localStorage.getItem(dataKey);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // 迁移旧的 wish 单对象到 wishes 数组
+      if (parsed.wish && !parsed.wishes) {
+        const oldWish = parsed.wish;
+        parsed.wishes = [{
+          id: 'wish_migrated_' + Date.now(),
+          name: oldWish.name,
+          target: oldWish.target,
+          image: oldWish.image || '',
+          saved: oldWish.saved || 0,
+        }];
+        parsed.activeWishId = parsed.wishes[0].id;
+        delete parsed.wish;
+        // 立即保存迁移后的数据
+        localStorage.setItem(dataKey, JSON.stringify(parsed));
+        console.log('✅ 已迁移旧心愿数据到新格式');
+      }
+      // 确保 wishes 字段存在
+      if (!parsed.wishes) {
+        parsed.wishes = [];
+      }
+      return parsed;
     }
   } catch (e) {
     console.error('数据加载失败:', e);
@@ -536,7 +562,10 @@ function initAllEventListeners() {
   // ---- 心愿卡片点击交互 ----
   document.querySelector('.wish-card')?.addEventListener('click', (e) => {
     if (e.target.closest('.btn-add-wish')) return;
-    openWishModal();
+    if (e.target.closest('.wish-edit-btn') || e.target.closest('.wish-delete-btn')) return;
+    // 如果已有心愿，打开活跃心愿的编辑；否则新建
+    const activeWish = getActiveWish();
+    openWishModal(activeWish ? activeWish.id : undefined);
   });
 
   // 空状态也支持点击（使用事件委托，因为 wishEmpty 是动态渲染的）
@@ -613,12 +642,22 @@ function animateNumber(el, target) {
   requestAnimationFrame(update);
 }
 
+// ===== 工具：获取当前活跃心愿 =====
+function getActiveWish() {
+  if (!data.wishes || data.wishes.length === 0) return null;
+  if (data.activeWishId) {
+    const found = data.wishes.find(w => w.id === data.activeWishId);
+    if (found) return found;
+  }
+  // 回退到第一个心愿
+  return data.wishes[0];
+}
+
 // ===== 渲染：心愿卡片 =====
 function renderWishCard() {
   const container = document.getElementById('wishDisplay');
-  const emptyState = document.getElementById('wishEmpty');
 
-  if (!data.wish) {
+  if (!data.wishes || data.wishes.length === 0) {
     container.innerHTML = `
       <div class="wish-empty-state" id="wishEmpty">
         <div class="empty-icon">🎯</div>
@@ -627,27 +666,64 @@ function renderWishCard() {
     return;
   }
 
-  const w = data.wish;
-  const percent = w.target > 0 ? Math.min((w.saved / w.target) * 100, 100) : 0;
-  const isComplete = percent >= 100;
+  // 展示所有心愿卡片
+  let html = '<div class="wish-list">';
+  data.wishes.forEach(w => {
+    const percent = w.target > 0 ? Math.min((w.saved / w.target) * 100, 100) : 0;
+    const isComplete = percent >= 100;
+    const isActive = data.activeWishId ? w.id === data.activeWishId : w === data.wishes[0];
 
-  container.innerHTML = `
-    <div class="wish-active fade-in">
-      <div class="wish-img-wrap">
-        ${w.image ? `<img src="${w.image}" alt="${w.name}" onerror="this.parentElement.innerHTML='🎁'">` : '🎁'}
-      </div>
-      <div class="wish-info">
-        <div class="wish-name">${w.name} ${isComplete ? '🎉' : ''}</div>
-        <div class="wish-progress-bar">
-          <div class="wish-progress-fill" style="width: ${percent}%"></div>
+    html += `
+      <div class="wish-active fade-in${isActive ? ' wish-selected' : ''}" data-wish-id="${w.id}" onclick="selectWish('${w.id}')">
+        <div class="wish-img-wrap">
+          ${w.image ? `<img src="${w.image}" alt="${w.name}" onerror="this.parentElement.innerHTML='🎁'">` : '🎁'}
         </div>
-        <div class="wish-amount-row">
-          <span class="wish-current">¥${formatAmount(w.saved)}</span>
-          <span class="wish-target">目标 ¥${formatAmount(w.target)}</span>
-          <span class="wish-percent">${percent.toFixed(1)}%</span>
+        <div class="wish-info">
+          <div class="wish-name">${w.name} ${isComplete ? '🎉' : ''} ${isActive ? '⭐' : ''}</div>
+          <div class="wish-progress-bar">
+            <div class="wish-progress-fill" style="width: ${percent}%"></div>
+          </div>
+          <div class="wish-amount-row">
+            <span class="wish-current">¥${formatAmount(w.saved)}</span>
+            <span class="wish-target">目标 ¥${formatAmount(w.target)}</span>
+            <span class="wish-percent">${percent.toFixed(1)}%</span>
+          </div>
         </div>
-      </div>
-    </div>`;
+        <button class="wish-edit-btn" onclick="event.stopPropagation(); openWishModal('${w.id}')" title="编辑">✏️</button>
+        <button class="wish-delete-btn" onclick="event.stopPropagation(); deleteWish('${w.id}')" title="删除">✕</button>
+      </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ===== 选中心愿作为存钱目标 =====
+function selectWish(wishId) {
+  data.activeWishId = wishId;
+  saveData(data);
+  renderWishCard();
+  renderGoalWish();
+  const w = data.wishes.find(w => w.id === wishId);
+  if (w) showToast(`⭐ 已选择「${w.name}」作为存钱目标`);
+}
+
+// ===== 删除心愿 =====
+function deleteWish(wishId) {
+  const w = data.wishes.find(w => w.id === wishId);
+  if (!w) return;
+  if (!confirm(`确定要删除心愿「${w.name}」吗？\n已存入的 ¥${formatAmount(w.saved)} 将从累计总额中扣除。`)) return;
+
+  data.totalSaved -= w.saved;
+  data.wishes = data.wishes.filter(w => w.id !== wishId);
+
+  // 如果删除的是当前活跃的，切换到第一个
+  if (data.activeWishId === wishId) {
+    data.activeWishId = data.wishes.length > 0 ? data.wishes[0].id : null;
+  }
+
+  saveData(data);
+  renderAll();
+  showToast(`🗑️ 已删除心愿「${w.name}」`);
 }
 
 // ===== 渲染：打卡进度 =====
@@ -1018,9 +1094,13 @@ function saveFoodListAndClose() {
 
 // ===== 克制消费弹窗 =====
 function openResistModal() {
-  if (!data.wish) {
+  if (!data.wishes || data.wishes.length === 0) {
     showToast('⚠️ 请先添加一个心愿礼物哦～点右上角的 + 按钮！');
     openWishModal();
+    return;
+  }
+  if (!getActiveWish()) {
+    showToast('⚠️ 请先选择一个心愿礼物作为存钱目标！');
     return;
   }
   document.getElementById('resistModal').classList.add('active');
@@ -1110,8 +1190,10 @@ function confirmResist() {
 
     data.history.push(record);
     data.totalSaved += amount;
-    if (data.wish) {
-      data.wish.saved += amount;
+    const activeWish = getActiveWish();
+    if (activeWish) {
+      activeWish.saved += amount;
+      record.wishId = activeWish.id;
     }
 
     saveData(data);
@@ -1140,18 +1222,35 @@ function confirmResist() {
 }
 
 // ===== 心愿管理弹窗 =====
-function openWishModal() {
-  document.getElementById('wishModal').classList.add('active');
-  // 如果已有心愿，填充编辑状态
-  if (data.wish) {
-    document.getElementById('wishName').value = data.wish.name;
-    document.getElementById('wishTarget').value = data.wish.target;
-    document.getElementById('wishImage').value = data.wish.image || '';
+let _editingWishId = null; // null=新建模式, 非null=编辑模式
+
+function openWishModal(editWishId) {
+  _editingWishId = editWishId || null;
+  const titleEl = document.querySelector('#wishModal .modal-title');
+
+  if (_editingWishId) {
+    // 编辑模式：填充现有数据
+    const w = data.wishes.find(w => w.id === _editingWishId);
+    if (w) {
+      document.getElementById('wishName').value = w.name;
+      document.getElementById('wishTarget').value = w.target;
+      document.getElementById('wishImage').value = w.image || '';
+      if (titleEl) titleEl.textContent = '🎁 编辑心愿礼物';
+    }
+  } else {
+    // 新建模式：清空表单
+    document.getElementById('wishName').value = '';
+    document.getElementById('wishTarget').value = '699';
+    document.getElementById('wishImage').value = '';
+    if (titleEl) titleEl.textContent = '🎁 添加心愿礼物';
   }
+
+  document.getElementById('wishModal').classList.add('active');
 }
 
 function closeWishModal() {
   document.getElementById('wishModal').classList.remove('active');
+  _editingWishId = null;
 }
 
 function saveWish() {
@@ -1168,19 +1267,35 @@ function saveWish() {
     return;
   }
 
-  // 如果已有心愿，保留已有存入金额；否则新建
-  const existingSaved = data.wish ? data.wish.saved : 0;
-
-  data.wish = {
-    name,
-    target,
-    image: image || '',
-    saved: existingSaved,
-  };
+  if (_editingWishId) {
+    // 编辑模式：更新现有心愿
+    const w = data.wishes.find(w => w.id === _editingWishId);
+    if (w) {
+      w.name = name;
+      w.target = target;
+      w.image = image || '';
+      showToast(`✅ 心愿「${name}」已更新`);
+    }
+  } else {
+    // 新建模式：添加新的心愿
+    const newWish = {
+      id: 'wish_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      name,
+      target,
+      image: image || '',
+      saved: 0,
+    };
+    data.wishes.push(newWish);
+    // 自动选中新添加的心愿作为存钱目标
+    data.activeWishId = newWish.id;
+    showToast(`✅ 已添加心愿「${name}」`);
+  }
 
   saveData(data);
   closeWishModal();
   renderWishCard();
+  renderGoalWish();
+  renderMinePage();
 
   // 清空表单
   document.getElementById('wishName').value = '';
@@ -1216,13 +1331,14 @@ function doCheckin() {
   // 检查是否达到3天的倍数 → 发放奖励
   const shouldBonus = data.currentStreak > 0 && data.currentStreak % 3 === 0;
 
-  if (shouldBonus) {
-    const BONUS_AMOUNT = 30;
-    data.bonusEarned += BONUS_AMOUNT;
-    data.totalSaved += BONUS_AMOUNT;
-    if (data.wish) {
-      data.wish.saved += BONUS_AMOUNT;
-    }
+    if (shouldBonus) {
+      const BONUS_AMOUNT = 30;
+      data.bonusEarned += BONUS_AMOUNT;
+      data.totalSaved += BONUS_AMOUNT;
+      const activeWish = getActiveWish();
+      if (activeWish) {
+        activeWish.saved += BONUS_AMOUNT;
+      }
 
     // 奖励记录
     const bonusRecord = {
@@ -2106,7 +2222,7 @@ function renderGoalPage() {
 
 function renderGoalWish() {
   const container = document.getElementById('goalWishDisplay');
-  if (!data.wish) {
+  if (!data.wishes || data.wishes.length === 0) {
     container.innerHTML = `
       <div class="wish-empty-state">
         <div class="empty-icon">🎯</div>
@@ -2115,21 +2231,27 @@ function renderGoalWish() {
     return;
   }
 
-  const w = data.wish;
-  const percent = w.target > 0 ? Math.min((w.saved / w.target) * 100, 100) : 0;
+  // 展示所有心愿
+  let html = '<div class="goal-wish-list">';
+  data.wishes.forEach(w => {
+    const percent = w.target > 0 ? Math.min((w.saved / w.target) * 100, 100) : 0;
+    const isActive = data.activeWishId ? w.id === data.activeWishId : w === data.wishes[0];
 
-  container.innerHTML = `
-    <div class="wish-preview">
-      <div class="wish-img" style="width:64px;height:64px;font-size:2rem;">${w.image ? `<img src="${w.image}" alt="${w.name}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;" onerror="this.parentElement.textContent='🎁'">` : '🎁'}</div>
-      <div class="wish-info">
-        <div class="wish-name" style="font-size:1rem;">${w.name}</div>
-        <div class="wish-bar-wrap" style="height:10px;border-radius:5px;background:#f0ece6;"><div class="wish-bar-fill" style="width:${percent}%;border-radius:5px;background:linear-gradient(90deg,#F5A623,#FFD700);"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px;">
-          <span style="font-size:0.78rem;color:var(--text-secondary);">已存 ¥${formatAmount(w.saved)}</span>
-          <span style="font-size:0.78rem;font-weight:700;color:var(--gold);">目标 ¥${formatAmount(w.target)}</span>
+    html += `
+      <div class="wish-preview${isActive ? ' wish-selected' : ''}" onclick="selectWish('${w.id}')" style="cursor:pointer;">
+        <div class="wish-img" style="width:64px;height:64px;font-size:2rem;">${w.image ? `<img src="${w.image}" alt="${w.name}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;" onerror="this.parentElement.textContent='🎁'">` : '🎁'}</div>
+        <div class="wish-info">
+          <div class="wish-name" style="font-size:1rem;">${w.name} ${isActive ? '⭐' : ''}</div>
+          <div class="wish-bar-wrap" style="height:10px;border-radius:5px;background:#f0ece6;"><div class="wish-bar-fill" style="width:${percent}%;border-radius:5px;background:linear-gradient(90deg,#F5A623,#FFD700);"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:0.78rem;color:var(--text-secondary);">已存 ¥${formatAmount(w.saved)}</span>
+            <span style="font-size:0.78rem;font-weight:700;color:var(--gold);">目标 ¥${formatAmount(w.target)}</span>
+          </div>
         </div>
-      </div>
-    </div>`;
+      </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 function renderFoodRank() {
@@ -2325,9 +2447,14 @@ function renderMinePage() {
 
   // 设置-心愿描述
   const wishDescEl = document.getElementById('settingWishDesc');
-  if (data.wish) {
-    const percent = data.wish.target > 0 ? Math.min((data.wish.saved / data.wish.target) * 100, 100) : 0;
-    wishDescEl.textContent = `${data.wish.name} · 已存 ${percent.toFixed(0)}%`;
+  if (data.wishes && data.wishes.length > 0) {
+    const activeWish = getActiveWish();
+    if (activeWish) {
+      const percent = activeWish.target > 0 ? Math.min((activeWish.saved / activeWish.target) * 100, 100) : 0;
+      wishDescEl.textContent = `${activeWish.name} · 已存 ${percent.toFixed(0)}%${data.wishes.length > 1 ? ` (共${data.wishes.length}个心愿)` : ''}`;
+    } else {
+      wishDescEl.textContent = `共 ${data.wishes.length} 个心愿`;
+    }
   } else {
     wishDescEl.textContent = '尚未设置心愿';
   }
