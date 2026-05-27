@@ -11,7 +11,7 @@
   --primary-soft: #F0F0F0;
 
   /* 紫色别名（兼容） */
-  --purple: #2D2D2D;
+  --purple: #AF52DE;
 
   /* 功能色 */
   --accent-gold: #F5A623;
@@ -24,8 +24,17 @@
   --accent-blue-soft: #E8F6FD;
   --accent-pink: #FF6B9D;
   --accent-pink-soft: #FFE8F0;
-  --accent-purple: #555555;
+  --accent-purple: #AF52DE;
   --accent-purple-soft: #F0EDE8;
+
+  /* 简写别名（被 inline style 引用） */
+  --orange: var(--accent-orange);
+  --green: var(--accent-green);
+  --gold: var(--accent-gold);
+
+  /* 发光阴影 */
+  --shadow-glow-orange: 0 0 20px rgba(255, 159, 67, 0.3);
+  --shadow-glow-gold: 0 0 20px rgba(245, 166, 35, 0.3);
 
   /* 暖白主题 - 非纯白，带暖调 */
   --bg-warm: #F5F4F0;
@@ -82,18 +91,17 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 4px 0 2px;
-  position: fixed;
+  position: sticky;
   top: 0;
   z-index: 100;
   background: #FAF9F6;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 /* 顶部栏跟随容器宽度（手机端） */
 .app-container > .top-bar {
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: inherit;
   padding-left: 20px;
   padding-right: 20px;
   box-sizing: border-box;
@@ -150,6 +158,8 @@ body {
   0%, 100% { opacity: 0.3; transform: translateY(0); }
   50% { opacity: 0.7; transform: translateY(-2px); }
 }
+
+@keyframes cardAppear {
   from { opacity: 0.85; transform: scaleY(0.95) scaleX(0.98); }
   to { opacity: 1; transform: scaleY(1.05) scaleX(1.02); }
 }
