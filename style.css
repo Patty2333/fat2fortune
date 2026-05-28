@@ -93,12 +93,12 @@ body {
   padding: 4px 20px 2px;
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
   background: #FAF9F6;
   max-width: 420px;
-  margin: 0 auto;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -155,8 +155,8 @@ body {
 }
 
 @keyframes cardAppear {
-  from { opacity: 0.85; transform: scaleY(0.95) scaleX(0.98); }
-  to { opacity: 1; transform: scaleY(1.05) scaleX(1.02); }
+  from { opacity: 0.85; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Logo 内金币微旋转 */
@@ -305,6 +305,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: start;
 }
 
 /* 手机端单列 */
@@ -328,7 +329,8 @@ body {
 }
 
 .wish-display {
-  min-height: 120px;
+  min-height: 80px;
+  overflow: hidden;
 }
 
 .wish-empty-state {
@@ -396,8 +398,8 @@ body {
 }
 
 .wish-img-wrap {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
@@ -423,9 +425,9 @@ body {
 }
 
 .wish-name {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -433,11 +435,11 @@ body {
 
 .wish-progress-bar {
   width: 100%;
-  height: 12px;
+  height: 8px;
   background: var(--bg-card-alt);
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
-  margin: 10px 0;
+  margin: 6px 0;
   border: 1px solid var(--border-light);
 }
 
@@ -472,7 +474,7 @@ body {
 }
 
 .wish-current {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--accent-gold);
 }
@@ -1734,8 +1736,8 @@ body {
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 500;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
@@ -1748,7 +1750,6 @@ body {
   padding: 10px 16px 22px;
   width: 100%;
   max-width: 420px;
-  margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -1890,8 +1891,8 @@ line-height: 1;
     width: 100%;
     max-width: 100vw;
     border-radius: 0;
-    left: 0;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   /* 手机端弹窗适配 */
@@ -2097,6 +2098,7 @@ line-height: 1;
   .dashboard-grid {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    align-items: start;
   }
 
   /* 所有卡片都占1格，不跨行跨列 - 除了action-card横跨2列 */
@@ -2165,10 +2167,8 @@ line-height: 1;
   .bottom-nav {
     width: 680px;
     max-width: 100%;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
 .app-container {
@@ -2178,6 +2178,7 @@ line-height: 1;
   /* 桌面端对称 2×2 布局 — 继承上面481px的统一定义 */
   .dashboard-grid {
     gap: 18px;
+    align-items: start;
   }
 
   .card {
@@ -2186,6 +2187,8 @@ line-height: 1;
 
 .top-bar {
   padding: 8px 0 4px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
   .app-title {
@@ -2211,14 +2214,13 @@ line-height: 1;
   .bottom-nav {
     width: 760px;
     max-width: 100%;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    transform: none;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .dashboard-grid {
     grid-template-columns: 1.2fr 1fr;
+    align-items: start;
   }
 }
 
@@ -3462,7 +3464,7 @@ line-height: 1;
 .wish-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .wish-list .wish-active {
@@ -3471,6 +3473,7 @@ line-height: 1;
   border-radius: var(--radius-md);
   padding: 10px;
   transition: border-color 0.2s ease, background 0.2s ease;
+  align-items: flex-start;
 }
 
 .wish-list .wish-active.wish-selected {
@@ -3485,16 +3488,22 @@ line-height: 1;
 .wish-edit-btn,
 .wish-delete-btn {
   position: absolute;
-  top: 6px;
-  background: none;
-  border: none;
+  top: 4px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 4px 6px;
-  border-radius: 8px;
-  opacity: 0.5;
-  transition: opacity 0.2s;
+  font-size: 0.75rem;
+  padding: 2px 5px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
   z-index: 2;
+  line-height: 1;
+}
+
+.wish-active:hover .wish-edit-btn,
+.wish-active:hover .wish-delete-btn {
+  opacity: 0.7;
 }
 
 .wish-edit-btn {
