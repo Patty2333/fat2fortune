@@ -83,9 +83,10 @@ body {
   margin: 0 auto;
   padding: 20px 20px 80px;
   position: relative;
+  overflow: visible;
 }
 
-/* ===== 顶部导航栏 - 紧凑固定头部（仅占位） ===== */
+/* ===== 顶部导航栏 - 紧凑固定头部 ===== */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -95,13 +96,9 @@ body {
   top: 0;
   z-index: 100;
   background: #FAF9F6;
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-/* 顶部栏跟随容器宽度（手机端） */
-.app-container > .top-bar {
+  width: calc(100% + 40px);
+  margin-left: -20px;
+  margin-right: -20px;
   padding-left: 20px;
   padding-right: 20px;
   box-sizing: border-box;
