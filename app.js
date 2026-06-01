@@ -1198,7 +1198,7 @@ function confirmResist() {
 
     saveData(data);
 
-    // 关闭弹窗
+    // 先关闭克制弹窗
     closeResistModal();
 
     // 清空备注
@@ -1209,15 +1209,16 @@ function confirmResist() {
     btn.style.opacity = '';
     btn.disabled = false;
 
-    // 显示庆祝弹窗
-    showCelebration('resist', amount);
-
     // 更新UI（带进度条高亮动画）
     renderAll();
     highlightWishProgress();
 
-    // 检查成就
-    checkAndUnlockBadges();
+    // 延迟显示庆祝弹窗，确保克制弹窗完全关闭后再弹出
+    setTimeout(() => {
+      showCelebration('resist', amount);
+      // 检查成就
+      checkAndUnlockBadges();
+    }, 400);
   }, 350);
 }
 
@@ -1351,8 +1352,10 @@ function doCheckin() {
     data.history.push(bonusRecord);
 
     saveData(data);
-    closeCelebration(); // 先关可能打开的
-    showCelebration('bonus', BONUS_AMOUNT);
+    // 延迟显示奖励庆祝弹窗
+    setTimeout(() => {
+      showCelebration('bonus', BONUS_AMOUNT);
+    }, 100);
   } else {
     saveData(data);
     showCelebration('checkin', 0);
@@ -1369,6 +1372,9 @@ function doCheckin() {
 let particleAnimationId = null;
 
 function showCelebration(type, amount, alreadyChecked = false) {
+  // 确保先关闭可能存在的庆祝弹窗
+  closeCelebration();
+
   const overlay = document.getElementById('celebrationOverlay');
   const content = document.getElementById('celebrationContent');
 
@@ -1392,10 +1398,12 @@ function showCelebration(type, amount, alreadyChecked = false) {
     amountEl.style.display = 'none';
   }
 
-  overlay.classList.add('active');
-
-  // 启动粒子效果
-  startParticles(type);
+  // 使用 requestAnimationFrame 确保 DOM 已更新
+  requestAnimationFrame(() => {
+    overlay.classList.add('active');
+    // 启动粒子效果
+    startParticles(type);
+  });
 }
 
 function closeCelebration() {
